@@ -1,0 +1,359 @@
+openapi: 3.1.0
+info:
+  title: TheChickenMan B2B Chicken Marketplace API
+  version: 1.0.0
+  description: Authoritative RESTful API for TheChickenMan commercial poultry platform.
+servers:
+  - url: /api/v1
+    description: Production & Local API Gateway
+
+paths:
+  /health:
+    get:
+      summary: Liveness Probe
+      responses:
+        '200':
+          description: Process healthy
+
+  /ready:
+    get:
+      summary: Readiness Probe
+      responses:
+        '200':
+          description: Database and services ready
+
+  /auth/register:
+    post:
+      summary: Register a new user account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password, full_name, phone_number, role]
+              properties:
+                email: { type: string, format: email }
+                password: { type: string, minLength: 8 }
+                full_name: { type: string }
+                phone_number: { type: string }
+                role: { type: string, enum: [ADMIN, SUPPLIER, BUYER, DRIVER] }
+      responses:
+        '201':
+          description: User created
+
+  /auth/login:
+    post:
+      summary: Authenticate and obtain JWT access token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email: { type: string }
+                password: { type: string }
+      responses:
+        '200':
+          description: Authentication successful
+
+  /auth/me:
+    get:
+      summary: Get currently authenticated user details
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Current user profile
+
+  /suppliers/profile:
+    get:
+      summary: Get current supplier profile
+      security: [{ BearerAuth: [] }]
+      responses:
+        '200': { description: Supplier profile }
+    post:
+      summary: Create or update supplier profile
+      security: [{ BearerAuth: [] }]
+      responses:
+        '200': { description: Supplier profile updated }
+
+  /suppliers/kyc:
+    post:
+      summary: Submit supplier KYC details and documents
+      security: [{ BearerAuth: [] }]
+      responses:
+        '200': { description: KYC submitted }
+
+  /suppliers/locations:
+    get:
+      summary: List supplier locations
+      security: [{ BearerAuth: [] }]
+      responses:
+        '200': { description: List of locations }
+    post:
+      summary: Add a new supplier location
+      security: [{ BearerAuth: [] }]
+      responses:
+        '201': { description: Location created }
+
+  /buyers/profile:
+    get:
+      summary: Get current buyer profile
+      security: [{ BearerAuth: [] }]
+      responses:
+        '200': { description: Buyer profile }
+    post:
+      summary: Create or update buyer profile
+      security: [{ BearerAuth: [] }]
+      responses:
+        '200': { description: Buyer profile updated }
+
+  /buyers/kyc:
+    post:
+      summary: Submit buyer KYC details
+      security: [{ BearerAuth: [] }]
+      responses:
+        '200': { description: KYC submitted }
+
+  /buyers/locations:
+    get:
+      summary: List buyer delivery locations
+      security: [{ BearerAuth: [] }]
+      responses:
+        '200': { description: List of delivery locations }
+    post:
+      summary: Add a buyer delivery location
+      security: [{ BearerAuth: [] }]
+      responses:
+        '201': { description: Location added }
+
+  /catalogue/products:
+    get:
+      summary: List standard chicken products
+      responses:
+        '200': { description: List of master SKUs }
+    post:
+      summary: Create standard chicken product (Admin)
+      security: [{ BearerAuth: [] }]
+      responses:
+        '201': { description: Master product created }
+
+  /catalogue/listings:
+    get:
+      summary: Search and filter active supplier product listings
+      parameters:
+        - name: query
+          in: query
+          schema: { type: string }
+        - name: condition
+          in: query
+          schema: { type: string, enum: [FRESH, CHILLED, FROZEN] }
+        - name: pincode
+          in: query
+          schema: { type: string }
+      responses:
+        '200': { description: Active purchasable listings }
+    post:
+      summary: Create supplier SKU listing
+      security: [{ BearerAuth: [] }]
+      responses:
+        '201': { description: Listing created }
+
+  /catalogue/listings/{id}:
+    get:
+      summary: Get product detail page with transparent landed pricing
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: Product listing details }
+
+  /inventory/batches:
+    get:
+      summary: List supplier production batches
+      security: [{ BearerAuth: [] }]
+      responses:
+        '200': { description: Batch list }
+    post:
+      summary: Create production batch
+      security: [{ BearerAuth: [] }]
+      responses:
+        '201': { description: Batch created }
+
+  /inventory:
+    get:
+      summary: View inventory ledger balances
+      security: [{ BearerAuth: [] }]
+      responses:
+        '200': { description: Inventory records }
+    post:
+      summary: Add stock (STOCK_IN)
+      security: [{ BearerAuth: [] }]
+      responses:
+        '201': { description: Stock added }
+
+  /pricing:
+    post:
+      summary: Set supplier product price and version
+      security: [{ BearerAuth: [] }]
+      responses:
+        '200': { description: Price set }
+
+  /cart:
+    get:
+      summary: Get current buyer cart
+      security: [{ BearerAuth: [] }]
+      responses:
+        '200': { description: Cart with items and totals }
+    post:
+      summary: Add item to cart
+      security: [{ BearerAuth: [] }]
+      responses:
+        '200': { description: Item added }
+    delete:
+      summary: Clear cart or remove item
+      security: [{ BearerAuth: [] }]
+      responses:
+        '200': { description: Cart cleared }
+
+  /orders:
+    get:
+      summary: List orders (filtered by authenticated role)
+      security: [{ BearerAuth: [] }]
+      responses:
+        '200': { description: List of orders }
+    post:
+      summary: Checkout cart and create order (reserves inventory)
+      security: [{ BearerAuth: [] }]
+      responses:
+        '201': { description: Order created and inventory reserved }
+
+  /orders/{id}:
+    get:
+      summary: Get order details and status history
+      security: [{ BearerAuth: [] }]
+      responses:
+        '200': { description: Order details }
+
+  /orders/{id}/accept:
+    post:
+      summary: Supplier accepts order (full or partial)
+      security: [{ BearerAuth: [] }]
+      responses:
+        '200': { description: Order confirmed }
+
+  /orders/{id}/reject:
+    post:
+      summary: Supplier rejects order
+      security: [{ BearerAuth: [] }]
+      responses:
+        '200': { description: Order rejected and stock released }
+
+  /orders/{id}/status:
+    patch:
+      summary: Update order status (Processing, Packed, Dispatched)
+      security: [{ BearerAuth: [] }]
+      responses:
+        '200': { description: Order status updated }
+
+  /payments/intent:
+    post:
+      summary: Create payment intent
+      security: [{ BearerAuth: [] }]
+      responses:
+        '200': { description: Payment intent created }
+
+  /payments/verify:
+    post:
+      summary: Verify payment completion
+      security: [{ BearerAuth: [] }]
+      responses:
+        '200': { description: Payment verified and order marked paid }
+
+  /payments/webhook:
+    post:
+      summary: Gateway webhook receiver (idempotent)
+      responses:
+        '200': { description: Webhook processed }
+
+  /invoices/{order_id}:
+    get:
+      summary: Get GST invoice for order
+      security: [{ BearerAuth: [] }]
+      responses:
+        '200': { description: Invoice details }
+
+  /logistics/assign:
+    post:
+      summary: Admin assigns driver to order delivery
+      security: [{ BearerAuth: [] }]
+      responses:
+        '200': { description: Delivery assigned }
+
+  /logistics/driver/deliveries:
+    get:
+      summary: Driver views assigned delivery jobs
+      security: [{ BearerAuth: [] }]
+      responses:
+        '200': { description: Assigned jobs }
+
+  /logistics/deliveries/{id}/pod:
+    post:
+      summary: Driver submits Proof of Delivery (POD)
+      security: [{ BearerAuth: [] }]
+      responses:
+        '200': { description: POD captured and order marked delivered }
+
+  /admin/kyc/suppliers:
+    get:
+      summary: List suppliers pending KYC review
+      security: [{ BearerAuth: [] }]
+      responses:
+        '200': { description: Supplier KYC list }
+
+  /admin/kyc/suppliers/{id}/approve:
+    post:
+      summary: Admin approves supplier KYC
+      security: [{ BearerAuth: [] }]
+      responses:
+        '200': { description: Supplier approved }
+
+  /admin/kyc/buyers:
+    get:
+      summary: List buyers pending KYC review
+      security: [{ BearerAuth: [] }]
+      responses:
+        '200': { description: Buyer KYC list }
+
+  /admin/kyc/buyers/{id}/approve:
+    post:
+      summary: Admin approves buyer KYC
+      security: [{ BearerAuth: [] }]
+      responses:
+        '200': { description: Buyer approved }
+
+  /admin/dashboard:
+    get:
+      summary: Admin marketplace performance KPIs (GMV, orders, kg sold)
+      security: [{ BearerAuth: [] }]
+      responses:
+        '200': { description: Dashboard KPIs }
+
+  /admin/audit-logs:
+    get:
+      summary: Query immutable audit logs
+      security: [{ BearerAuth: [] }]
+      responses:
+        '200': { description: Audit logs }
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

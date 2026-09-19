@@ -1,0 +1,52 @@
+# Dependencies
+node_modules/
+*/node_modules/
+apps/web/node_modules/
+.pnp
+.pnp.js
+
+# Next.js Build
+.next/
+*/.next/
+apps/web/.next/
+out/
+build/
+dist/
+
+# Python Virtual Environments & Bytecode
+__pycache__/
+*/__pycache__/
+*/*/__pycache__/
+*/*/*/__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+*/.venv/
+venv/
+env/
+*.egg-info/
+.eggs/
+
+# Testing & Caches
+.pytest_cache/
+*/.pytest_cache/
+.coverage
+htmlcov/
+*.log
+
+# Environment & Secrets
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Uploads & Generated Media
+uploads/
+*/uploads/
+
+# OS / IDE files
+.DS_Store
+*.pem
+.idea/
+.vscode/
