@@ -25,3 +25,16 @@ def test_gst_invoice_engine(client: TestClient, db_session: Session, buyer1_toke
     assert data["invoice_number"] == invoice.invoice_number
     assert "total_tax" in data
     assert data["grand_total"] == float(invoice.grand_total)
+    assert "supplier" in data
+    assert "buyer" in data
+    assert data["supplier"]["gstin"] is not None
+
+    # Test PDF download endpoint
+    pdf_res = client.get(
+        f"/api/v1/invoices/{order.id}/pdf",
+        headers={"Authorization": f"Bearer {buyer1_token}"}
+    )
+    assert pdf_res.status_code == 200
+    assert pdf_res.headers["content-type"] == "application/pdf"
+    assert len(pdf_res.content) > 0
+    assert pdf_res.content.startswith(b"%PDF")

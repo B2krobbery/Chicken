@@ -50,3 +50,5 @@ uploads/
 *.pem
 .idea/
 .vscode/
+.agents/
+skills-lock.json

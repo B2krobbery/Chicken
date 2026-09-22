@@ -148,6 +148,63 @@ export const api = {
         }),
       }),
     getInvoice: (orderId: string) => apiRequest(`/invoices/${orderId}`),
+    downloadInvoicePdf: async (orderId: string, invoiceNumber?: string) => {
+      const activeToken = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+      const res = await fetch(`${API_BASE}/invoices/${orderId}/pdf`, {
+        headers: {
+          ...(activeToken ? { Authorization: `Bearer ${activeToken}` } : {}),
+        },
+      });
+      if (!res.ok) {
+        let errText = "Failed to download PDF";
+        try {
+          const errJson = await res.json();
+          errText = errJson.detail || errText;
+        } catch {
+          // ignore
+        }
+        throw new Error(errText);
+      }
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${invoiceNumber || "Tax-Invoice"}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      a.remove();
+    },
+  },
+  invoices: {
+    getInvoice: (orderId: string) => apiRequest(`/invoices/${orderId}`),
+    downloadInvoicePdf: async (orderId: string, invoiceNumber?: string) => {
+      const activeToken = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+      const res = await fetch(`${API_BASE}/invoices/${orderId}/pdf`, {
+        headers: {
+          ...(activeToken ? { Authorization: `Bearer ${activeToken}` } : {}),
+        },
+      });
+      if (!res.ok) {
+        let errText = "Failed to download PDF";
+        try {
+          const errJson = await res.json();
+          errText = errJson.detail || errText;
+        } catch {
+          // ignore
+        }
+        throw new Error(errText);
+      }
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${invoiceNumber || "Tax-Invoice"}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      a.remove();
+    },
   },
   driver: {
     getDeliveries: () => apiRequest("/logistics/driver/deliveries"),

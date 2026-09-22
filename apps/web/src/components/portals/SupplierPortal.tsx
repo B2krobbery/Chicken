@@ -13,8 +13,13 @@ import {
   AlertTriangle, 
   CheckCircle2, 
   FileSpreadsheet,
-  PackageCheck
+  PackageCheck,
+  FileText,
+  ChevronDown,
+  ChevronUp
 } from "lucide-react";
+import { OrderTimelineTracker } from "@/components/OrderTimelineTracker";
+import { GSTTaxInvoiceModal } from "@/components/GSTTaxInvoiceModal";
 
 export function SupplierPortal() {
   const [profile, setProfile] = useState<any>(null);
@@ -25,6 +30,11 @@ export function SupplierPortal() {
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [msg, setMsg] = useState<string | null>(null);
+
+  // Invoices & Order Timeline
+  const [selectedInvoice, setSelectedInvoice] = useState<any>(null);
+  const [selectedOrderForInvoice, setSelectedOrderForInvoice] = useState<any>(null);
+  const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
 
   // Forms
   const [showStockIn, setShowStockIn] = useState(false);
@@ -130,6 +140,16 @@ export function SupplierPortal() {
       await api.supplier.updateStatus(orderId, nextStatus, `Updated by supplier to ${nextStatus}`);
       setMsg(`Order status changed to ${nextStatus}`);
       loadData();
+    } catch (err: any) {
+      alert(err.message);
+    }
+  };
+
+  const handleViewInvoice = async (order: any) => {
+    try {
+      const inv = await api.buyer.getInvoice(order.id);
+      setSelectedInvoice(inv);
+      setSelectedOrderForInvoice(order);
     } catch (err: any) {
       alert(err.message);
     }
@@ -409,10 +429,26 @@ export function SupplierPortal() {
         </div>
       </div>
 
+      {/* Invoice Modal */}
+      {selectedInvoice && (
+        <GSTTaxInvoiceModal
+          invoice={selectedInvoice}
+          orderId={selectedOrderForInvoice?.id || selectedInvoice.order_id}
+          onClose={() => {
+            setSelectedInvoice(null);
+            setSelectedOrderForInvoice(null);
+          }}
+        />
+      )}
+
       {/* Incoming Orders Management */}
       <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-        <div className="p-4 bg-slate-50 border-b border-slate-200">
-          <h3 className="font-bold text-slate-800 text-sm">Fulfillment & Order Acceptance</h3>
+        <div className="p-4 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
+          <div>
+            <h3 className="font-bold text-slate-800 text-sm">Fulfillment & Order Acceptance</h3>
+            <p className="text-[11px] text-slate-500">Real-time order workflow, cold-chain status transitions, and GST invoices.</p>
+          </div>
+          <span className="text-xs text-slate-400 font-medium">Click order row to expand timeline</span>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse text-xs">
@@ -421,57 +457,118 @@ export function SupplierPortal() {
                 <th className="p-3">Order Number</th>
                 <th className="p-3">Buyer Enterprise</th>
                 <th className="p-3">Amount</th>
-                <th className="p-3">Status</th>
+                <th className="p-3">Status & Tracking</th>
                 <th className="p-3 text-right">Order Controls</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {orders.map((o) => (
-                <tr key={o.id} className="hover:bg-slate-50/50">
-                  <td className="p-3 font-mono font-bold text-slate-900">{o.order_number}</td>
-                  <td className="p-3 font-medium text-slate-800">{o.buyer_name}</td>
-                  <td className="p-3 font-mono font-bold text-slate-900">₹{o.total_amount?.toLocaleString()}</td>
-                  <td className="p-3">
-                    <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 text-slate-800">
-                      {o.status}
-                    </span>
-                  </td>
-                  <td className="p-3 text-right space-x-2">
-                    {o.status === "PENDING" && (
-                      <>
-                        <button
-                          onClick={() => handleAcceptOrder(o.id)}
-                          className="bg-emerald-600 hover:bg-emerald-500 text-white font-medium px-2.5 py-1 rounded transition text-xs"
-                        >
-                          Accept
-                        </button>
-                        <button
-                          onClick={() => handleRejectOrder(o.id)}
-                          className="bg-rose-100 hover:bg-rose-200 text-rose-800 font-medium px-2.5 py-1 rounded transition text-xs"
-                        >
-                          Reject
-                        </button>
-                      </>
+              {orders.map((o) => {
+                const isExpanded = expandedOrderId === o.id;
+                return (
+                  <React.Fragment key={o.id}>
+                    <tr 
+                      onClick={() => setExpandedOrderId(isExpanded ? null : o.id)}
+                      className="hover:bg-slate-50/70 transition cursor-pointer select-none"
+                    >
+                      <td className="p-3 font-mono font-bold text-slate-900">
+                        <div className="flex items-center gap-1.5">
+                          {isExpanded ? (
+                            <ChevronUp className="w-3.5 h-3.5 text-purple-600 shrink-0" />
+                          ) : (
+                            <ChevronDown className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                          )}
+                          <span>{o.order_number}</span>
+                        </div>
+                      </td>
+                      <td className="p-3 font-medium text-slate-800">{o.buyer_name}</td>
+                      <td className="p-3 font-mono font-bold text-slate-900">₹{o.total_amount?.toLocaleString()}</td>
+                      <td className="p-3">
+                        <OrderTimelineTracker 
+                          status={o.status} 
+                          compact 
+                          driverName={o.driver_name} 
+                          vehicleNumber={o.vehicle_number} 
+                        />
+                      </td>
+                      <td className="p-3 text-right space-x-2" onClick={(e) => e.stopPropagation()}>
+                        {o.status === "PENDING" && (
+                          <>
+                            <button
+                              onClick={() => handleAcceptOrder(o.id)}
+                              className="bg-emerald-600 hover:bg-emerald-500 text-white font-medium px-2.5 py-1 rounded transition text-xs shadow-xs"
+                            >
+                              Accept
+                            </button>
+                            <button
+                              onClick={() => handleRejectOrder(o.id)}
+                              className="bg-rose-100 hover:bg-rose-200 text-rose-800 font-medium px-2.5 py-1 rounded transition text-xs"
+                            >
+                              Reject
+                            </button>
+                          </>
+                        )}
+                        {o.status === "CONFIRMED" && (
+                          <button
+                            onClick={() => handleAdvanceStatus(o.id, "PROCESSING")}
+                            className="bg-blue-600 hover:bg-blue-500 text-white font-medium px-2.5 py-1 rounded transition text-xs shadow-xs"
+                          >
+                            Start Processing
+                          </button>
+                        )}
+                        {o.status === "PROCESSING" && (
+                          <button
+                            onClick={() => handleAdvanceStatus(o.id, "PACKED")}
+                            className="bg-purple-600 hover:bg-purple-500 text-white font-medium px-2.5 py-1 rounded transition text-xs shadow-xs"
+                          >
+                            Mark Packed
+                          </button>
+                        )}
+                        {o.status !== "PENDING" && (
+                          <button
+                            onClick={() => handleViewInvoice(o)}
+                            className="bg-slate-100 hover:bg-slate-200 text-slate-800 font-medium px-2.5 py-1 rounded transition text-xs inline-flex items-center gap-1 border border-slate-200"
+                          >
+                            <FileText className="w-3.5 h-3.5 text-emerald-600" />
+                            Invoice
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                    {isExpanded && (
+                      <tr className="bg-slate-50/80 border-b border-slate-200">
+                        <td colSpan={5} className="p-4 sm:p-5">
+                          <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs space-y-3">
+                            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-1 border-b border-slate-100 pb-2">
+                              <div>
+                                <h4 className="font-bold text-slate-900 text-xs flex items-center gap-2">
+                                  <span>Fulfillment Progression Stepper</span>
+                                  <span className="font-mono text-purple-700 bg-purple-50 px-2 py-0.5 rounded text-[11px]">
+                                    {o.order_number}
+                                  </span>
+                                </h4>
+                              </div>
+                              <div className="text-[11px] text-slate-500">
+                                Order Placed: {new Date(o.created_at).toLocaleString("en-IN", {
+                                  day: "2-digit",
+                                  month: "short",
+                                  year: "numeric",
+                                  hour: "2-digit",
+                                  minute: "2-digit"
+                                })}
+                              </div>
+                            </div>
+                            <OrderTimelineTracker
+                              status={o.status}
+                              driverName={o.driver_name}
+                              vehicleNumber={o.vehicle_number}
+                            />
+                          </div>
+                        </td>
+                      </tr>
                     )}
-                    {o.status === "CONFIRMED" && (
-                      <button
-                        onClick={() => handleAdvanceStatus(o.id, "PROCESSING")}
-                        className="bg-blue-600 hover:bg-blue-500 text-white font-medium px-2.5 py-1 rounded transition text-xs"
-                      >
-                        Start Processing
-                      </button>
-                    )}
-                    {o.status === "PROCESSING" && (
-                      <button
-                        onClick={() => handleAdvanceStatus(o.id, "PACKED")}
-                        className="bg-purple-600 hover:bg-purple-500 text-white font-medium px-2.5 py-1 rounded transition text-xs"
-                      >
-                        Mark Packed
-                      </button>
-                    )}
-                  </td>
-                </tr>
-              ))}
+                  </React.Fragment>
+                );
+              })}
             </tbody>
           </table>
         </div>

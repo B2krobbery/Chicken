@@ -14,8 +14,12 @@ import {
   Truck, 
   X,
   Package,
-  Layers
+  Layers,
+  ChevronDown,
+  ChevronUp
 } from "lucide-react";
+import { OrderTimelineTracker } from "@/components/OrderTimelineTracker";
+import { GSTTaxInvoiceModal } from "@/components/GSTTaxInvoiceModal";
 
 export function BuyerPortal() {
   const [profile, setProfile] = useState<any>(null);
@@ -36,6 +40,8 @@ export function BuyerPortal() {
   const [selectedLocationId, setSelectedLocationId] = useState("");
   const [paymentModalOrder, setPaymentModalOrder] = useState<any>(null);
   const [selectedInvoice, setSelectedInvoice] = useState<any>(null);
+  const [selectedOrderForInvoice, setSelectedOrderForInvoice] = useState<any>(null);
+  const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
 
   const loadData = async () => {
     setLoading(true);
@@ -129,10 +135,11 @@ export function BuyerPortal() {
     }
   };
 
-  const handleViewInvoice = async (orderId: string) => {
+  const handleViewInvoice = async (order: any) => {
     try {
-      const inv = await api.buyer.getInvoice(orderId);
+      const inv = await api.buyer.getInvoice(order.id);
       setSelectedInvoice(inv);
+      setSelectedOrderForInvoice(order);
     } catch (err: any) {
       alert(err.message);
     }
@@ -423,61 +430,24 @@ export function BuyerPortal() {
 
       {/* Invoice Viewer Modal */}
       {selectedInvoice && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-xl max-w-lg w-full p-6 space-y-4 shadow-2xl text-xs">
-            <div className="flex justify-between items-center border-b pb-3">
-              <h3 className="font-bold text-slate-900 text-base flex items-center gap-2">
-                <FileText className="w-5 h-5 text-emerald-600" />
-                Tax Invoice ({selectedInvoice.invoice_number})
-              </h3>
-              <button onClick={() => setSelectedInvoice(null)} className="text-slate-400 hover:text-slate-600">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <div className="space-y-2 p-4 bg-slate-50 rounded-lg">
-              <div className="flex justify-between">
-                <span className="text-slate-500">Supplier:</span>
-                <span className="font-bold">{selectedInvoice.supplier_name}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-slate-500">Buyer:</span>
-                <span className="font-bold">{selectedInvoice.buyer_name}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-slate-500">Date:</span>
-                <span>{selectedInvoice.invoice_date}</span>
-              </div>
-              <div className="border-t pt-2 flex justify-between">
-                <span>Subtotal:</span>
-                <span className="font-mono">₹{selectedInvoice.subtotal.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Total Tax (CGST+SGST / IGST):</span>
-                <span className="font-mono">₹{selectedInvoice.total_tax.toFixed(2)}</span>
-              </div>
-              <div className="border-t pt-2 flex justify-between font-bold text-sm">
-                <span>Grand Total:</span>
-                <span className="font-mono text-emerald-700">₹{selectedInvoice.grand_total.toFixed(2)}</span>
-              </div>
-            </div>
-
-            <div className="text-right">
-              <button
-                onClick={() => setSelectedInvoice(null)}
-                className="px-4 py-2 bg-slate-900 text-white font-bold rounded-lg"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
+        <GSTTaxInvoiceModal
+          invoice={selectedInvoice}
+          orderId={selectedOrderForInvoice?.id || selectedInvoice.order_id}
+          onClose={() => {
+            setSelectedInvoice(null);
+            setSelectedOrderForInvoice(null);
+          }}
+        />
       )}
 
       {/* Order History & Tracking */}
       <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-        <div className="p-4 bg-slate-50 border-b border-slate-200">
-          <h3 className="font-bold text-slate-800 text-sm">My Order History & Invoices</h3>
+        <div className="p-4 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
+          <div>
+            <h3 className="font-bold text-slate-800 text-sm">My Order History & Invoices</h3>
+            <p className="text-[11px] text-slate-500">Track delivery status in real-time or view Rule 46 GST tax invoices.</p>
+          </div>
+          <span className="text-xs text-slate-400 font-medium">Click order row to expand timeline</span>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse text-xs">
@@ -487,38 +457,91 @@ export function BuyerPortal() {
                 <th className="p-3">Supplier</th>
                 <th className="p-3">Total (INR)</th>
                 <th className="p-3">Payment</th>
-                <th className="p-3">Status</th>
+                <th className="p-3">Status & Tracking</th>
                 <th className="p-3 text-right">Invoice</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {orders.map((o) => (
-                <tr key={o.id} className="hover:bg-slate-50/50">
-                  <td className="p-3 font-mono font-bold text-slate-900">{o.order_number}</td>
-                  <td className="p-3 font-medium text-slate-800">{o.supplier_name}</td>
-                  <td className="p-3 font-mono font-bold text-slate-900">₹{o.total_amount?.toLocaleString()}</td>
-                  <td className="p-3">
-                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                      o.payment_status === "SUCCESS" ? "bg-emerald-100 text-emerald-800" : "bg-amber-100 text-amber-800"
-                    }`}>
-                      {o.payment_status}
-                    </span>
-                  </td>
-                  <td className="p-3">
-                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-800">
-                      {o.status}
-                    </span>
-                  </td>
-                  <td className="p-3 text-right">
-                    <button
-                      onClick={() => handleViewInvoice(o.id)}
-                      className="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium px-2.5 py-1 rounded transition"
+              {orders.map((o) => {
+                const isExpanded = expandedOrderId === o.id;
+                return (
+                  <React.Fragment key={o.id}>
+                    <tr 
+                      onClick={() => setExpandedOrderId(isExpanded ? null : o.id)}
+                      className="hover:bg-slate-50/70 transition cursor-pointer select-none"
                     >
-                      View Tax Invoice
-                    </button>
-                  </td>
-                </tr>
-              ))}
+                      <td className="p-3 font-mono font-bold text-slate-900">
+                        <div className="flex items-center gap-1.5">
+                          {isExpanded ? (
+                            <ChevronUp className="w-3.5 h-3.5 text-purple-600 shrink-0" />
+                          ) : (
+                            <ChevronDown className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                          )}
+                          <span>{o.order_number}</span>
+                        </div>
+                      </td>
+                      <td className="p-3 font-medium text-slate-800">{o.supplier_name}</td>
+                      <td className="p-3 font-mono font-bold text-slate-900">₹{o.total_amount?.toLocaleString()}</td>
+                      <td className="p-3">
+                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                          o.payment_status === "SUCCESS" ? "bg-emerald-100 text-emerald-800 border border-emerald-200" : "bg-amber-100 text-amber-800 border border-amber-200"
+                        }`}>
+                          {o.payment_status}
+                        </span>
+                      </td>
+                      <td className="p-3">
+                        <OrderTimelineTracker 
+                          status={o.status} 
+                          compact 
+                          driverName={o.driver_name} 
+                          vehicleNumber={o.vehicle_number} 
+                        />
+                      </td>
+                      <td className="p-3 text-right" onClick={(e) => e.stopPropagation()}>
+                        <button
+                          onClick={() => handleViewInvoice(o)}
+                          className="text-xs bg-slate-900 hover:bg-slate-800 text-white font-medium px-2.5 py-1 rounded-lg transition shadow-xs inline-flex items-center gap-1.5"
+                        >
+                          <FileText className="w-3.5 h-3.5 text-emerald-400" />
+                          Tax Invoice
+                        </button>
+                      </td>
+                    </tr>
+                    {isExpanded && (
+                      <tr className="bg-slate-50/80 border-b border-slate-200">
+                        <td colSpan={6} className="p-4 sm:p-5">
+                          <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs space-y-3">
+                            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-1 border-b border-slate-100 pb-2">
+                              <div>
+                                <h4 className="font-bold text-slate-900 text-xs flex items-center gap-2">
+                                  <span>Live Order Fulfillment Timeline</span>
+                                  <span className="font-mono text-purple-700 bg-purple-50 px-2 py-0.5 rounded text-[11px]">
+                                    {o.order_number}
+                                  </span>
+                                </h4>
+                              </div>
+                              <div className="text-[11px] text-slate-500">
+                                Booked on {new Date(o.created_at).toLocaleString("en-IN", {
+                                  day: "2-digit",
+                                  month: "short",
+                                  year: "numeric",
+                                  hour: "2-digit",
+                                  minute: "2-digit"
+                                })}
+                              </div>
+                            </div>
+                            <OrderTimelineTracker
+                              status={o.status}
+                              driverName={o.driver_name}
+                              vehicleNumber={o.vehicle_number}
+                            />
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </React.Fragment>
+                );
+              })}
             </tbody>
           </table>
         </div>

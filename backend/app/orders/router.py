@@ -99,6 +99,8 @@ def list_orders(
             "supplier_name": o.supplier.business_name if o.supplier else None,
             "total_amount": float(o.total_amount),
             "payment_status": o.payment.status if o.payment else "PENDING",
+            "driver_name": o.delivery.driver.full_name if (o.delivery and o.delivery.driver) else None,
+            "vehicle_number": o.delivery.vehicle_number if o.delivery else None,
             "created_at": o.created_at.isoformat()
         }
         for o in orders
