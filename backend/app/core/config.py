@@ -17,7 +17,7 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24  # 24 hours
     
     # File Storage
-    STORAGE_LOCAL_PATH: str = os.getenv("STORAGE_LOCAL_PATH", "/home/visalvijay/antigravity/chicken/uploads")
+    STORAGE_LOCAL_PATH: str = os.getenv("STORAGE_LOCAL_PATH", "./uploads")
     MAX_FILE_SIZE_MB: int = 10
     
     # External Providers
