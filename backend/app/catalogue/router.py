@@ -199,9 +199,16 @@ def search_listings(
         delivery_estimate_per_kg = 5.00  # typical logistics buffer
         landed_price_per_kg = round(base_price + tax_amount + delivery_estimate_per_kg, 2)
 
+        # Get supplier's primary active location
+        loc = db.query(SupplierLocation).filter(
+            SupplierLocation.supplier_id == l.supplier_id,
+            SupplierLocation.is_active == True
+        ).first()
+
         results.append({
             "id": str(l.id),
             "supplier_id": str(l.supplier_id),
+            "supplier_location_id": str(loc.id) if loc else None,
             "supplier_name": l.supplier.business_name,
             "product_id": str(l.product_id),
             "product_name": l.product.name,

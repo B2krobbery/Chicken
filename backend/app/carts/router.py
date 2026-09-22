@@ -16,7 +16,7 @@ router = APIRouter(prefix="/cart", tags=["Cart & Checkout Pre-validation"])
 
 class AddCartItemRequest(BaseModel):
     supplier_product_id: str
-    supplier_location_id: str
+    supplier_location_id: Optional[str] = None
     quantity_kg: float = Field(..., gt=0)
 
 @router.get("")
@@ -127,12 +127,19 @@ def add_item_to_cart(
     if not sp or not sp.is_available:
         raise HTTPException(status_code=404, detail="Product listing not available")
 
-    loc = db.query(SupplierLocation).filter(
-        SupplierLocation.id == req.supplier_location_id,
-        SupplierLocation.supplier_id == sp.supplier_id
-    ).first()
+    loc = None
+    if req.supplier_location_id:
+        loc = db.query(SupplierLocation).filter(
+            SupplierLocation.id == req.supplier_location_id,
+            SupplierLocation.supplier_id == sp.supplier_id
+        ).first()
     if not loc:
-        raise HTTPException(status_code=404, detail="Supplier location not found")
+        loc = db.query(SupplierLocation).filter(
+            SupplierLocation.supplier_id == sp.supplier_id,
+            SupplierLocation.is_active == True
+        ).first()
+    if not loc:
+        raise HTTPException(status_code=404, detail="No active supplier location found for dispatch")
 
     # If cart already has an item for this listing & location, update qty
     item = db.query(CartItem).filter(

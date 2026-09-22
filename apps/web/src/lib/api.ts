@@ -121,7 +121,7 @@ export const api = {
     },
     getListingDetail: (id: string) => apiRequest(`/catalogue/listings/${id}`),
     getCart: () => apiRequest("/cart"),
-    addToCart: (data: { supplier_product_id: string; supplier_location_id: string; quantity_kg: number }) =>
+    addToCart: (data: { supplier_product_id: string; supplier_location_id?: string; quantity_kg: number }) =>
       apiRequest("/cart/items", { method: "POST", body: JSON.stringify(data) }),
     removeCartItem: (id: string) =>
       apiRequest(`/cart/items/${id}`, { method: "DELETE" }),

@@ -72,15 +72,9 @@ export function BuyerPortal() {
 
   const handleAddToCart = async (listing: any, qty: number) => {
     try {
-      // Find a supplier location
-      const suppLocId = "00000000-0000-0000-0000-000000000000"; // fallback or listing's supplier location
-      // We can fetch supplier location or use listing's default
-      const suppLocs = await api.supplier.getLocations();
-      const locId = suppLocs.length > 0 ? suppLocs[0].id : suppLocId;
-
       await api.buyer.addToCart({
         supplier_product_id: listing.id,
-        supplier_location_id: locId,
+        supplier_location_id: listing.supplier_location_id || undefined,
         quantity_kg: qty,
       });
       const updatedCart = await api.buyer.getCart();
