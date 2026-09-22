@@ -147,9 +147,28 @@ export function BuyerPortal() {
 
   if (loading && !profile) {
     return (
-      <div className="flex items-center justify-center p-12 text-slate-500">
-        <Clock className="w-5 h-5 animate-spin mr-2" />
-        Loading Institutional Buyer Marketplace...
+      <div className="space-y-6 animate-pulse">
+        {/* Marketplace Search Header Skeleton */}
+        <div className="bg-white p-6 rounded-xl border border-slate-200">
+          <div className="h-6 bg-slate-200 rounded w-64 mb-4"></div>
+          <div className="flex gap-3">
+            <div className="h-10 bg-slate-200 rounded-lg flex-1"></div>
+            <div className="h-10 bg-slate-200 rounded-lg w-32"></div>
+            <div className="h-10 bg-slate-200 rounded-lg w-32"></div>
+          </div>
+        </div>
+        
+        {/* Products Grid Skeleton */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {[1, 2, 3, 4, 5, 6, 7, 8].map(i => (
+            <div key={i} className="bg-white p-5 rounded-xl border border-slate-200 space-y-4">
+              <div className="h-4 bg-slate-200 rounded w-1/3"></div>
+              <div className="h-6 bg-slate-200 rounded w-3/4"></div>
+              <div className="h-8 bg-slate-200 rounded w-1/2 mt-2"></div>
+              <div className="h-10 bg-slate-200 rounded-lg w-full mt-4"></div>
+            </div>
+          ))}
+        </div>
       </div>
     );
   }

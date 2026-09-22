@@ -77,9 +77,27 @@ export function DriverPortal() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center p-12 text-slate-500">
-        <Clock className="w-5 h-5 animate-spin mr-2" />
-        Loading Logistics & Dispatch Portal...
+      <div className="space-y-6 animate-pulse">
+        {/* Header Skeleton */}
+        <div className="bg-white p-6 rounded-xl border border-slate-200 flex justify-between items-center">
+          <div className="h-6 bg-slate-200 rounded w-48"></div>
+          <div className="h-4 bg-slate-200 rounded w-24"></div>
+        </div>
+        
+        {/* Deliveries List Skeleton */}
+        <div className="space-y-4">
+          <div className="h-5 bg-slate-200 rounded w-40"></div>
+          {[1, 2].map(i => (
+            <div key={i} className="bg-white p-5 rounded-xl border border-slate-200 space-y-4">
+              <div className="flex justify-between">
+                <div className="h-5 bg-slate-200 rounded w-1/4"></div>
+                <div className="h-6 bg-slate-200 rounded-full w-24"></div>
+              </div>
+              <div className="h-4 bg-slate-200 rounded w-2/4"></div>
+              <div className="h-10 bg-slate-200 rounded-lg w-full mt-4"></div>
+            </div>
+          ))}
+        </div>
       </div>
     );
   }
