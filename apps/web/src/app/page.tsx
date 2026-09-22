@@ -6,7 +6,7 @@ import { AdminPortal } from "@/components/portals/AdminPortal";
 import { SupplierPortal } from "@/components/portals/SupplierPortal";
 import { BuyerPortal } from "@/components/portals/BuyerPortal";
 import { DriverPortal } from "@/components/portals/DriverPortal";
-import { ShieldCheck, Store, UserCheck, Truck, Lock, ArrowRight } from "lucide-react";
+import { ShieldCheck, Store, UserCheck, Truck, Lock } from "lucide-react";
 
 export default function HomePage() {
   const { user, role, loading, switchUser, login } = useAuth();

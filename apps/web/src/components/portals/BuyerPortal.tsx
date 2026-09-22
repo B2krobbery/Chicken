@@ -9,7 +9,7 @@ import {
   AlertCircle, 
   CreditCard, 
   FileText, 
-  Clock, 
+  
   MapPin, 
   Truck, 
   X,

@@ -7,7 +7,7 @@ import {
   MapPin, 
   Phone, 
   CheckCircle2, 
-  Clock, 
+  
   Camera, 
   FileSignature, 
   Key, 

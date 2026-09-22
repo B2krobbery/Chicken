@@ -14,7 +14,6 @@ import {
   ShieldAlert,
   Truck,
   FileText,
-  Clock
 } from "lucide-react";
 
 export function AdminPortal() {

@@ -8,8 +8,7 @@ import {
   PlusCircle, 
   Check, 
   X, 
-  ArrowRight, 
-  Clock, 
+  
   AlertTriangle, 
   CheckCircle2, 
   FileSpreadsheet,
