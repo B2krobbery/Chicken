@@ -79,7 +79,7 @@ The following environment variables are required. See `.env.example` in the root
 - `DB_POOL_SIZE` / `DB_MAX_OVERFLOW`: SQLAlchemy pool sizing (defaults 20/10 for local; set to `2`/`0` on Vercel serverless).
 - `PAYMENT_PROVIDER`: Configures payment gateway (currently `MOCK`).
 - `NOTIFICATION_PROVIDER`: Configures notifications (currently `MOCK`).
-- `NEXT_PUBLIC_API_URL`: (Frontend) Configures the backend API endpoint. Production value: the `chicken-api` Vercel deployment URL + `/api/v1`.
+- `NEXT_PUBLIC_API_URL`: (Frontend) Configures the backend API endpoint. Production value: `https://chicken-api-mauve.vercel.app/api/v1`.
 
 ## API architecture
 - **Base Path**: `/api/v1`
@@ -114,7 +114,7 @@ The following environment variables are required. See `.env.example` in the root
 ## Deployment
 - **Frontend URL**: `https://chicken-kappa-six.vercel.app/` (Vercel project `chicken`, git-linked to `marvelpokemaster/Chicken` `main`; pushes auto-deploy).
 - **Frontend**: Next.js app built from `apps/web` via root `vercel.json`.
-- **Backend**: Separate Vercel project `chicken-api` (`framework: fastapi`, root directory `backend/`), deployed via `gitSource` deployments from `marvelpokemaster/Chicken` `main`. It is NOT git-linked — after backend changes, trigger a new deployment (Vercel API `create_deployment` or link the repo in the dashboard). Railway deploy files (`backend/railway.toml`, `Procfile`, `Dockerfile`) still exist as an alternative but are unused.
+- **Backend**: Separate Vercel project `chicken-api` (`framework: fastapi`, root directory `backend/`) at `https://chicken-api-mauve.vercel.app`, deployed via `gitSource` deployments from `marvelpokemaster/Chicken` `main`. It is NOT git-linked — after backend changes, trigger a new deployment (Vercel API `create_deployment` or link the repo in the dashboard). Railway deploy files (`backend/railway.toml`, `Procfile`, `Dockerfile`) still exist as an alternative but are unused.
 - **Database**: Supabase Postgres via session-mode pooler; connect as role `chicken_app` (least-privilege, created 2026-09-23) — not the `postgres` superuser.
 - **Vercel protection**: frontend `ssoProtection` = `all_except_custom_domains` (assigned domains public, deployment URLs need Vercel login); `chicken-api` has SSO protection disabled.
 - **Stale URL**: `https://chicken-b2k1.vercel.app/` belongs to an older deployment outside this project and is SSO-locked — do not use or reference it.
