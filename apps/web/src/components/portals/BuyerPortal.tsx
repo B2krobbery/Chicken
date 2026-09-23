@@ -28,6 +28,7 @@ export function BuyerPortal() {
   const [cart, setCart] = useState<any>(null);
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [cartBusy, setCartBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
 
   // Filters
@@ -43,10 +44,19 @@ export function BuyerPortal() {
   const [selectedOrderForInvoice, setSelectedOrderForInvoice] = useState<any>(null);
   const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
 
+  const refreshCart = async () => {
+    try {
+      const c = await api.buyer.getCart();
+      setCart(c);
+    } catch (err: any) {
+      setMsg(`Cart refresh error: ${err.message}`);
+    }
+  };
+
   const loadData = async () => {
     setLoading(true);
     try {
-      const [p, locs, lists, c, ords] = await Promise.all([
+      const [p, locs, lists, ords] = await Promise.all([
         api.buyer.getProfile(),
         api.buyer.getLocations(),
         api.buyer.searchListings({
@@ -54,13 +64,11 @@ export function BuyerPortal() {
           condition: conditionFilter || undefined,
           pincode: pincodeFilter || undefined,
         }),
-        api.buyer.getCart(),
         api.buyer.getOrders(),
       ]);
       setProfile(p);
       setLocations(locs);
       setListings(lists);
-      setCart(c);
       setOrders(ords);
       if (locs.length > 0 && !selectedLocationId) {
         setSelectedLocationId(locs[0].id);
@@ -74,9 +82,16 @@ export function BuyerPortal() {
 
   useEffect(() => {
     loadData();
+    refreshCart();
+  }, []);
+
+  useEffect(() => {
+    loadData();
   }, [searchQuery, conditionFilter, pincodeFilter]);
 
   const handleAddToCart = async (listing: any, qty: number) => {
+    if (cartBusy) return;
+    setCartBusy(true);
     try {
       await api.buyer.addToCart({
         supplier_product_id: listing.id,
@@ -88,16 +103,24 @@ export function BuyerPortal() {
       setMsg(`Added ${qty} kg of ${listing.product_name} to cart.`);
     } catch (err: any) {
       alert(err.message);
+    } finally {
+      setCartBusy(false);
     }
   };
 
   const handleRemoveItem = async (itemId: string) => {
+    if (cartBusy) return;
+    setCartBusy(true);
     try {
       await api.buyer.removeCartItem(itemId);
       const updatedCart = await api.buyer.getCart();
       setCart(updatedCart);
     } catch (err: any) {
+      // Sync with server truth before surfacing error, in case the item id was stale.
+      try { setCart(await api.buyer.getCart()); } catch {}
       alert(err.message);
+    } finally {
+      setCartBusy(false);
     }
   };
 
@@ -106,7 +129,17 @@ export function BuyerPortal() {
       alert("Please select a delivery location");
       return;
     }
+    if (cartBusy) return;
+    setCartBusy(true);
     try {
+      // Refresh cart from server immediately before checkout so the order
+      // reflects the actual cart, not a stale UI render.
+      const freshCart = await api.buyer.getCart();
+      setCart(freshCart);
+      if (!freshCart.is_valid_for_checkout || freshCart.items.length === 0) {
+        alert(freshCart.validation_messages?.join(" ") || "Cart is not valid for checkout.");
+        return;
+      }
       const order = await api.buyer.checkout({
         delivery_location_id: selectedLocationId,
         notes: "Urgent commercial requirement",
@@ -114,9 +147,12 @@ export function BuyerPortal() {
       setMsg(`Order ${order.order_number} created! Inventory reserved.`);
       setShowCartDrawer(false);
       setPaymentModalOrder(order);
-      loadData();
+      await refreshCart();
+      await loadData();
     } catch (err: any) {
       alert(err.message);
+    } finally {
+      setCartBusy(false);
     }
   };
 
@@ -288,9 +324,9 @@ export function BuyerPortal() {
             <div className="mt-5 pt-3 border-t border-slate-100 flex items-center justify-between gap-3">
               <button
                 onClick={() => handleAddToCart(l, l.moq_kg)}
-                disabled={l.total_available_stock_kg < l.moq_kg}
+                disabled={cartBusy || l.total_available_stock_kg < l.moq_kg}
                 className={`w-full py-2 px-3 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 ${
-                  l.total_available_stock_kg >= l.moq_kg
+                  !cartBusy && l.total_available_stock_kg >= l.moq_kg
                     ? "bg-slate-900 hover:bg-slate-800 text-white"
                     : "bg-slate-200 text-slate-400 cursor-not-allowed"
                 }`}
@@ -339,9 +375,10 @@ export function BuyerPortal() {
                         <div className="font-mono font-bold text-slate-900">₹{item.item_total.toFixed(2)}</div>
                         <button
                           onClick={() => handleRemoveItem(item.id)}
-                          className="text-[11px] text-rose-500 hover:underline mt-1"
+                          disabled={cartBusy}
+                          className="text-[11px] text-rose-500 hover:underline mt-1 disabled:text-rose-300 disabled:cursor-not-allowed"
                         >
-                          Remove
+                          {cartBusy ? "Updating..." : "Remove"}
                         </button>
                       </div>
                     </div>
@@ -392,14 +429,14 @@ export function BuyerPortal() {
 
                 <button
                   onClick={handleCheckout}
-                  disabled={!cart.is_valid_for_checkout}
+                  disabled={cartBusy || !cart.is_valid_for_checkout}
                   className={`w-full py-3 rounded-lg font-bold text-xs shadow mt-2 transition ${
-                    cart.is_valid_for_checkout
+                    !cartBusy && cart.is_valid_for_checkout
                       ? "bg-emerald-600 hover:bg-emerald-500 text-white"
                       : "bg-slate-300 text-slate-500 cursor-not-allowed"
                   }`}
                 >
-                  Place Order & Reserve Inventory
+                  {cartBusy ? "Please wait..." : "Place Order & Reserve Inventory"}
                 </button>
               </div>
             )}

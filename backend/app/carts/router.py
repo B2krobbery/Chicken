@@ -141,12 +141,13 @@ def add_item_to_cart(
     if not loc:
         raise HTTPException(status_code=404, detail="No active supplier location found for dispatch")
 
-    # If cart already has an item for this listing & location, update qty
+    # If cart already has an item for this listing & location, update qty.
+    # Lock the row to prevent lost updates from concurrent clicks.
     item = db.query(CartItem).filter(
         CartItem.cart_id == cart.id,
         CartItem.supplier_product_id == sp.id,
         CartItem.supplier_location_id == loc.id
-    ).first()
+    ).with_for_update().first()
 
     qty = Decimal(str(req.quantity_kg))
     if item:
