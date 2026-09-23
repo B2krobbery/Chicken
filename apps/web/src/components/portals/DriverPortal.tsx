@@ -65,6 +65,7 @@ export function DriverPortal() {
     setError(null);
     try {
       await api.driver.capturePOD(selectedDelivery.delivery_id, {
+        delivery_id: selectedDelivery.delivery_id,
         pod_type: "OTP",
         otp_code: otpCode,
         recipient_name: recipientName,

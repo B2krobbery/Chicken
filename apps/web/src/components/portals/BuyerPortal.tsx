@@ -596,13 +596,18 @@ export function BuyerPortal() {
                     className="px-3 py-2.5 text-right space-x-1.5 whitespace-nowrap"
                     onClick={(e) => e.stopPropagation()}
                   >
-                    {o.status === "PENDING" && (
+                    {o.status === "PENDING" && o.payment_status !== "SUCCESS" && (
                       <button
                         onClick={() => setPaymentModalOrder(o)}
                         className="bg-brand-600 hover:bg-brand-700 text-white font-bold px-2.5 py-1 rounded-md text-[11px]"
                       >
                         Pay now
                       </button>
+                    )}
+                    {o.payment_status === "SUCCESS" && o.status === "PENDING" && (
+                      <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-emerald-50 border border-emerald-200 text-emerald-700 text-[10px] font-bold uppercase tracking-wide">
+                        Paid
+                      </span>
                     )}
                     {!["PENDING", "CANCELLED", "REJECTED"].includes(o.status) && (
                       <button
