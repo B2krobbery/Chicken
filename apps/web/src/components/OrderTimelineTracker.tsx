@@ -21,14 +21,22 @@ export interface OrderTimelineProps {
 }
 
 const STEPS = [
-  { key: "CREATED", label: "Placed", desc: "Order booked", icon: ShoppingBag },
+  { key: "PLACED", label: "Placed", desc: "Order booked", icon: ShoppingBag },
   { key: "CONFIRMED", label: "Confirmed", desc: "Supplier accepted", icon: CheckCircle2 },
   { key: "PACKED", label: "Packed", desc: "Cold storage ready", icon: Package },
   { key: "DISPATCHED", label: "Dispatched", desc: "Driver on route", icon: Truck },
   { key: "DELIVERED", label: "Delivered", desc: "POD verified", icon: ShieldCheck },
 ];
 
-const STATUS_ORDER = ["CREATED", "CONFIRMED", "PACKED", "DISPATCHED", "DELIVERED"];
+/* Map real backend order statuses onto the 5-step stepper. */
+const STATUS_TO_INDEX: Record<string, number> = {
+  PENDING: 0,
+  CONFIRMED: 1,
+  PROCESSING: 2,
+  PACKED: 2,
+  DISPATCHED: 3,
+  DELIVERED: 4,
+};
 
 export function OrderTimelineTracker({
   status,
@@ -36,8 +44,8 @@ export function OrderTimelineTracker({
   vehicleNumber,
   compact = false,
 }: OrderTimelineProps) {
-  const isCancelled = status === "CANCELLED" || status === "REJECTED";
-  const currentIndex = STATUS_ORDER.indexOf(status);
+  const isCancelled = status === "CANCELLED" || status === "REJECTED" || status === "REFUNDED";
+  const currentIndex = STATUS_TO_INDEX[status] ?? -1;
 
   if (isCancelled) {
     return (
@@ -50,27 +58,29 @@ export function OrderTimelineTracker({
   }
 
   if (compact) {
+    const c =
+      status === "DELIVERED"
+        ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+        : status === "DISPATCHED"
+        ? "bg-sky-50 text-sky-700 border-sky-200"
+        : status === "PACKED"
+        ? "bg-indigo-50 text-indigo-700 border-indigo-200"
+        : status === "PROCESSING"
+        ? "bg-blue-50 text-blue-700 border-blue-200"
+        : status === "CONFIRMED" || status === "PENDING"
+        ? "bg-amber-50 text-amber-700 border-amber-200"
+        : "bg-slate-100 text-slate-700 border-slate-300";
     return (
       <div className="flex items-center gap-1.5">
         <span
-          className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold ${
-            status === "DELIVERED"
-              ? "bg-emerald-100 text-emerald-800 border border-emerald-300"
-              : status === "DISPATCHED"
-              ? "bg-purple-100 text-purple-800 border border-purple-300"
-              : status === "PACKED"
-              ? "bg-amber-100 text-amber-800 border border-amber-300"
-              : status === "CONFIRMED"
-              ? "bg-blue-100 text-blue-800 border border-blue-300"
-              : "bg-slate-100 text-slate-700 border border-slate-300"
-          }`}
+          className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full border text-[11px] font-bold uppercase tracking-wide ${c}`}
         >
           <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
           {status}
         </span>
         {driverName && status === "DISPATCHED" && (
-          <span className="text-[10px] text-purple-700 bg-purple-50 px-2 py-0.5 rounded border border-purple-200">
-            🚚 {driverName} ({vehicleNumber || "KA-01-EA-1234"})
+          <span className="text-[10px] text-sky-700 bg-sky-50 px-2 py-0.5 rounded border border-sky-200 font-mono">
+            {driverName} · {vehicleNumber || "Cold-Van"}
           </span>
         )}
       </div>
@@ -131,15 +141,15 @@ export function OrderTimelineTracker({
 
       {/* Driver info card when Dispatched or Delivered */}
       {driverName && (status === "DISPATCHED" || status === "DELIVERED") && (
-        <div className="mt-2 p-2.5 bg-purple-50/80 border border-purple-200 rounded-lg flex items-center justify-between text-xs text-purple-900">
+        <div className="mt-2 p-2.5 bg-sky-50 border border-sky-200 rounded-md flex items-center justify-between text-xs text-sky-900">
           <div className="flex items-center gap-2">
-            <Truck className="w-4 h-4 text-purple-600 shrink-0" />
+            <Truck className="w-4 h-4 text-sky-600 shrink-0" />
             <span>
-              <strong>Driver:</strong> {driverName} &nbsp;|&nbsp; <strong>Vehicle:</strong> {vehicleNumber || "KA-01-EA-1234"}
+              <strong>Driver:</strong> {driverName} &nbsp;·&nbsp; <strong>Vehicle:</strong> {vehicleNumber || "Cold-Van"}
             </span>
           </div>
-          <span className="text-[10px] bg-purple-200 text-purple-800 px-2 py-0.5 rounded font-semibold">
-            {status === "DELIVERED" ? "Completed" : "In Transit"}
+          <span className="text-[10px] bg-sky-100 text-sky-800 px-2 py-0.5 rounded font-bold uppercase tracking-wide">
+            {status === "DELIVERED" ? "Completed" : "In transit"}
           </span>
         </div>
       )}

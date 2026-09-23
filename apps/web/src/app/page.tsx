@@ -6,29 +6,66 @@ import { AdminPortal } from "@/components/portals/AdminPortal";
 import { SupplierPortal } from "@/components/portals/SupplierPortal";
 import { BuyerPortal } from "@/components/portals/BuyerPortal";
 import { DriverPortal } from "@/components/portals/DriverPortal";
-import { ShieldCheck, Store, UserCheck, Truck, Lock } from "lucide-react";
+import { SplashScreen } from "@/components/ui/Splash";
+import {
+  ShieldCheck,
+  Store,
+  UserCheck,
+  Truck,
+  Lock,
+  Loader2,
+} from "lucide-react";
+
+const DEMO_ROLES = [
+  {
+    role: "ADMIN" as const,
+    label: "Admin Console",
+    desc: "KYC approval queues, GMV analytics, audit logs",
+    icon: ShieldCheck,
+    accent: "border-purple-300 hover:border-purple-500",
+    iconBg: "bg-purple-500/15 text-purple-400",
+    who: "admin@thechickenman.com",
+  },
+  {
+    role: "SUPPLIER" as const,
+    label: "Supplier",
+    desc: "Batch stock-in, inventory ledger, order acceptance",
+    icon: Store,
+    accent: "border-amber-300 hover:border-amber-500",
+    iconBg: "bg-amber-500/15 text-amber-400",
+    who: "supplier1@thechickenman.com",
+  },
+  {
+    role: "BUYER" as const,
+    label: "Buyer",
+    desc: "Marketplace, multi-SKU cart, checkout, invoices",
+    icon: UserCheck,
+    accent: "border-emerald-300 hover:border-emerald-500",
+    iconBg: "bg-emerald-500/15 text-emerald-400",
+    who: "buyer1@thechickenman.com",
+  },
+  {
+    role: "DRIVER" as const,
+    label: "Driver",
+    desc: "Delivery runs, OTP & signature POD capture",
+    icon: Truck,
+    accent: "border-sky-300 hover:border-sky-500",
+    iconBg: "bg-sky-500/15 text-sky-400",
+    who: "driver@thechickenman.com",
+  },
+];
 
 export default function HomePage() {
   const { user, role, loading, switchUser, login } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loginErr, setLoginErr] = useState<string | null>(null);
+  const [signingIn, setSigningIn] = useState<string | null>(null);
 
   if (loading) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[80vh]">
-        <div className="relative flex items-center justify-center w-20 h-20 mb-6">
-          <div className="absolute inset-0 border-4 border-brand-100 rounded-full"></div>
-          <div className="absolute inset-0 border-4 border-brand-600 rounded-full border-t-transparent animate-spin"></div>
-          <span className="text-2xl">🍗</span>
-        </div>
-        <h2 className="text-xl font-bold text-slate-800 tracking-tight mb-2">TheChickenMan</h2>
-        <p className="text-sm font-medium text-slate-500 animate-pulse">Securing session...</p>
-      </div>
-    );
+    return <SplashScreen stage="Checking your session…" />;
   }
 
-  // If user is authenticated, render the corresponding role portal
   if (user && role) {
     switch (role) {
       case "ADMIN":
@@ -47,131 +84,188 @@ export default function HomePage() {
   const handleCustomLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoginErr(null);
+    setSigningIn("custom");
     try {
       await login(email, password);
     } catch (err: any) {
       setLoginErr(err.message);
+    } finally {
+      setSigningIn(null);
     }
   };
 
-  // Not logged in -> Landing screen with 1-click role demos
+  const handleDemo = async (r: (typeof DEMO_ROLES)[number]) => {
+    setLoginErr(null);
+    setSigningIn(r.role);
+    try {
+      await switchUser(r.role);
+    } catch (err: any) {
+      setLoginErr(err.message);
+    } finally {
+      setSigningIn(null);
+    }
+  };
+
   return (
-    <div className="max-w-4xl mx-auto py-12 space-y-10">
-      <div className="text-center space-y-3">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-100 text-brand-800 text-xs font-bold uppercase tracking-wider">
-          🍗 TheChickenMan MVP Portal
+    <div className="min-h-screen flex flex-col lg:flex-row">
+      {/* Brand panel */}
+      <div className="bg-shell-900 lg:w-[42%] lg:min-h-screen flex flex-col justify-between px-6 sm:px-10 py-8 lg:py-10">
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-md bg-gradient-to-tr from-brand-600 to-amber-500 flex items-center justify-center text-lg">
+            🍗
+          </div>
+          <div>
+            <div className="text-sm font-bold text-slate-50">TheChickenMan</div>
+            <div className="text-[10px] text-slate-400 uppercase tracking-[0.15em]">
+              B2B Poultry Platform
+            </div>
+          </div>
         </div>
-        <h1 className="text-4xl font-extrabold text-slate-900 tracking-tight">
-          India's B2B Poultry Trading & Fulfillment Platform
-        </h1>
-        <p className="text-base text-slate-600 max-w-2xl mx-auto">
-          Connecting verified poultry processors with commercial buyers. Complete with FSSAI/GST KYC verification, multi-state inventory ledgers, and proof-of-delivery dispatch.
-        </p>
-      </div>
 
-      {/* Demo 1-Click Role Access Cards */}
-      <div className="space-y-3">
-        <h2 className="text-sm font-bold text-slate-700 uppercase tracking-wider text-center">
-          Instant Demo Access (Select Persona to Explore)
-        </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <button
-            onClick={() => switchUser("ADMIN")}
-            className="p-5 bg-white border border-slate-200 hover:border-purple-400 hover:shadow-md rounded-xl text-left transition group"
-          >
-            <div className="p-2.5 bg-purple-50 text-purple-600 rounded-lg w-fit group-hover:scale-110 transition">
-              <ShieldCheck className="w-6 h-6" />
-            </div>
-            <div className="mt-3 font-bold text-slate-900 text-sm">Admin Console</div>
-            <div className="text-xs text-slate-500 mt-1">
-              KYC approval queues, GMV analytics, master catalogue & audit logs.
-            </div>
-          </button>
+        <div className="py-10 lg:py-0">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-slate-50 tracking-tight leading-tight">
+            Institutional poultry procurement,
+            <span className="text-brand-400"> end to end.</span>
+          </h1>
+          <p className="text-sm text-slate-400 mt-4 max-w-md leading-relaxed">
+            Verified FSSAI/GST suppliers, real-time multi-state inventory
+            ledgers, GST-compliant invoicing, and OTP-verified cold-chain
+            delivery — one platform.
+          </p>
+          <div className="mt-6 grid grid-cols-3 gap-3 max-w-md">
+            {[
+              ["4", "Portal roles"],
+              ["5%", "GST invoicing"],
+              ["POD", "Cold-chain proof"],
+            ].map(([v, l]) => (
+              <div
+                key={l}
+                className="border border-shell-700 rounded-md px-3 py-2.5"
+              >
+                <div className="text-lg font-bold text-slate-100 tnum">{v}</div>
+                <div className="text-[10px] text-slate-500 uppercase tracking-wide">
+                  {l}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
 
-          <button
-            onClick={() => switchUser("SUPPLIER")}
-            className="p-5 bg-white border border-slate-200 hover:border-amber-400 hover:shadow-md rounded-xl text-left transition group"
-          >
-            <div className="p-2.5 bg-amber-50 text-amber-600 rounded-lg w-fit group-hover:scale-110 transition">
-              <Store className="w-6 h-6" />
-            </div>
-            <div className="mt-3 font-bold text-slate-900 text-sm">Supplier (Venky's)</div>
-            <div className="text-xs text-slate-500 mt-1">
-              KYC status, batch stock-in, inventory ledger, order acceptance.
-            </div>
-          </button>
-
-          <button
-            onClick={() => switchUser("BUYER")}
-            className="p-5 bg-white border border-slate-200 hover:border-emerald-400 hover:shadow-md rounded-xl text-left transition group"
-          >
-            <div className="p-2.5 bg-emerald-50 text-emerald-600 rounded-lg w-fit group-hover:scale-110 transition">
-              <UserCheck className="w-6 h-6" />
-            </div>
-            <div className="mt-3 font-bold text-slate-900 text-sm">Buyer (Biryani Blues)</div>
-            <div className="text-xs text-slate-500 mt-1">
-              Marketplace discovery, multi-SKU cart, checkout, payment, invoices.
-            </div>
-          </button>
-
-          <button
-            onClick={() => switchUser("DRIVER")}
-            className="p-5 bg-white border border-slate-200 hover:border-blue-400 hover:shadow-md rounded-xl text-left transition group"
-          >
-            <div className="p-2.5 bg-blue-50 text-blue-600 rounded-lg w-fit group-hover:scale-110 transition">
-              <Truck className="w-6 h-6" />
-            </div>
-            <div className="mt-3 font-bold text-slate-900 text-sm">Driver (Ramesh)</div>
-            <div className="text-xs text-slate-500 mt-1">
-              Assigned delivery jobs, route addresses, OTP & signature POD capture.
-            </div>
-          </button>
+        <div className="text-[10px] text-slate-600 hidden lg:block">
+          Mocked payments & notifications · Production data via Supabase
         </div>
       </div>
 
-      {/* Manual Login Form */}
-      <div className="max-w-md mx-auto bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4 text-xs">
-        <div className="font-bold text-slate-800 text-sm flex items-center gap-2">
-          <Lock className="w-4 h-4 text-slate-500" />
-          Or Sign In with Custom Credentials
+      {/* Auth panel */}
+      <div className="flex-1 flex items-center justify-center p-5 sm:p-8">
+        <div className="w-full max-w-xl space-y-6">
+          <div>
+            <h2 className="text-lg font-bold text-slate-900 tracking-tight">
+              Access the platform
+            </h2>
+            <p className="text-xs text-slate-500 mt-1">
+              Pick a demo persona or sign in with workspace credentials.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {DEMO_ROLES.map((r) => {
+              const Icon = r.icon;
+              const busy = signingIn === r.role;
+              return (
+                <button
+                  key={r.role}
+                  onClick={() => handleDemo(r)}
+                  disabled={signingIn !== null}
+                  className={`p-4 bg-shell-900 border border-shell-700 rounded-lg text-left transition group disabled:opacity-60 ${r.accent}`}
+                >
+                  <div className="flex items-center justify-between">
+                    <div
+                      className={`p-2 rounded-md w-fit ${r.iconBg} group-hover:scale-105 transition`}
+                    >
+                      {busy ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <Icon className="w-4 h-4" />
+                      )}
+                    </div>
+                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                      {busy ? "Signing in…" : "Demo"}
+                    </span>
+                  </div>
+                  <div className="mt-2.5 font-bold text-slate-100 text-sm">
+                    {r.label}
+                  </div>
+                  <div className="text-[11px] text-slate-500 mt-0.5 leading-snug">
+                    {r.desc}
+                  </div>
+                  <div className="text-[10px] text-slate-600 mt-1.5 font-mono truncate">
+                    {r.who}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Credential form */}
+          <div className="bg-white border border-slate-200 rounded-lg p-5 space-y-3">
+            <div className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+              <Lock className="w-3.5 h-3.5 text-slate-400" />
+              Sign in with credentials
+            </div>
+            {loginErr && (
+              <div className="px-3 py-2 bg-rose-50 border border-rose-200 text-rose-700 rounded-md text-xs">
+                {loginErr}
+              </div>
+            )}
+            <form onSubmit={handleCustomLogin} className="space-y-3">
+              <div>
+                <label
+                  htmlFor="login-email"
+                  className="block text-[11px] font-semibold text-slate-600 mb-1 uppercase tracking-wide"
+                >
+                  Email
+                </label>
+                <input
+                  id="login-email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="admin@thechickenman.com"
+                  className="w-full px-2.5 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/40 focus:border-brand-500"
+                  required
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="login-password"
+                  className="block text-[11px] font-semibold text-slate-600 mb-1 uppercase tracking-wide"
+                >
+                  Password
+                </label>
+                <input
+                  id="login-password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="w-full px-2.5 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/40 focus:border-brand-500"
+                  required
+                />
+              </div>
+              <button
+                type="submit"
+                disabled={signingIn !== null}
+                className="w-full py-2.5 bg-brand-600 hover:bg-brand-700 disabled:bg-slate-300 text-white text-sm font-bold rounded-md transition flex items-center justify-center gap-2"
+              >
+                {signingIn === "custom" && (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                )}
+                Sign in
+              </button>
+            </form>
+          </div>
         </div>
-
-        {loginErr && (
-          <div className="p-3 bg-rose-50 border border-rose-200 text-rose-700 rounded-lg">
-            {loginErr}
-          </div>
-        )}
-
-        <form onSubmit={handleCustomLogin} className="space-y-3">
-          <div>
-            <label className="block text-slate-600 font-semibold mb-1">Email Address</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="e.g. admin@thechickenman.com"
-              className="w-full p-2.5 border rounded-lg"
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-slate-600 font-semibold mb-1">Password</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              className="w-full p-2.5 border rounded-lg"
-              required
-            />
-          </div>
-          <button
-            type="submit"
-            className="w-full py-2.5 bg-brand-600 hover:bg-brand-500 text-white font-bold rounded-lg transition shadow"
-          >
-            Sign In
-          </button>
-        </form>
       </div>
     </div>
   );

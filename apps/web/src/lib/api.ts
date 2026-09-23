@@ -21,12 +21,15 @@ export async function apiRequest(
   });
 
   if (!res.ok) {
-    let errorDetail = "An unexpected error occurred";
-    try {
-      const errJson = await res.json();
-      errorDetail = errJson.detail || errJson.error?.message || JSON.stringify(errJson);
-    } catch {
-      errorDetail = await res.text();
+    let errorDetail = `Request failed with status ${res.status}`;
+    const text = await res.text();
+    if (text) {
+      try {
+        const errJson = JSON.parse(text);
+        errorDetail = errJson.detail || errJson.error?.message || JSON.stringify(errJson);
+      } catch {
+        errorDetail = text;
+      }
     }
     throw new Error(errorDetail);
   }

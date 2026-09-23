@@ -1,11 +1,20 @@
 # ChickenMan Phase 1 Implementation Status
 
 ## Summary
-The codebase contains a highly modular FastAPI backend (PostgreSQL + SQLAlchemy) and a Next.js 14 frontend. The local implementation of Phase 1 is **COMPLETE** in source code. All APIs, database schemas, and frontend UI components are present. 
+The codebase contains a highly modular FastAPI backend (PostgreSQL + SQLAlchemy) and a Next.js 14 frontend. The local implementation of Phase 1 is **COMPLETE** in source code. All APIs, database schemas, and frontend UI components are present.
 
-However, **end-to-end deployment validation is still limited**. The production site `https://chicken-kappa-six.vercel.app/` is publicly accessible, and the FastAPI backend is deployed as a separate Vercel project (`chicken-api`, `framework: fastapi`, root dir `backend/`) backed by the hosted Supabase Postgres — previously the frontend pointed at `localhost:8000` and the documented URL `chicken-b2k1.vercel.app` was a stale SSO-locked alias. Serverless caveats: invoice PDFs/uploaded files use ephemeral `/tmp` storage, idle functions cold-start, and the API project is not git-linked (backend changes need a manual `create_deployment` call until the repo is linked in the dashboard).
+The production site `https://chicken-kappa-six.vercel.app/` is publicly accessible, and the FastAPI backend is deployed as a separate Vercel project (`chicken-api`, `framework: fastapi`, root dir `backend/`) backed by the hosted Supabase Postgres (`Chicken` project, `rhmdfjlvhiaeoywinlfc`, Postgres 17.6.1, ap-northeast-1 — `ACTIVE_HEALTHY`). The previously stale alias `chicken-b2k1.vercel.app` must not be used.
 
 Additionally, Payment (P1-24) and Notifications (P1-23) are implemented using **Mock Providers** (`MockPaymentProvider`, `MockNotificationProvider`). There are no integrations with real providers like Razorpay or AWS SES.
+
+## UI/Design redesign status (2026-09-23)
+- **Design system**: Google Stitch project `7677945534075423788` ("ChickenMan Ops" — dark-slate shell `#0f172a`, daylight canvas, `#ea580c` accent, Inter + JetBrains Mono). Tokens live in `apps/web/tailwind.config.js` + `globals.css`; artifacts in `/.stitch/designs/`.
+- **App shell**: shared `AppShell` (role-aware sidebar/topbar/breadcrumbs/env chip/user menu) across all 4 portals; old `Navbar` removed.
+- **Portals**: buyer (marketplace + qty-input cards + cart + checkout + orders + invoices), supplier (KPIs + KYC strip + inventory ledger + inline pricing + order controls), admin (KPIs + KYC queues + drivers + audit), driver (deliveries + POD modal) — all redesigned, business logic preserved.
+- **States**: branded `SplashScreen`, `.skeleton` shimmer system matching final layouts, `EmptyState`/`ErrorState`/`Banner` components; views gate on loading so empty states never flash prematurely.
+- **Responsive**: verified via Playwright screenshots at 320, 390, 768, 1280, 1440, 1920 — no viewport overflow; tables scroll internally and hide non-essential columns on mobile.
+- **Frontend bug fixed in this pass**: `api.ts` read the error response body twice (`res.json()` then `res.text()`) producing "body stream already read" on any non-JSON API error; now reads once and parses.
+- **Backend fix pending deploy**: Supavisor session-mode pool exhaustion → `NullPool` on Vercel (`app/core/database.py`) — **needs `chicken-api` redeploy**; until then recurring 500s under connection pressure are possible (recovery: terminate idle `chicken_app` backends).
 
 ## Implementation Matrix
 

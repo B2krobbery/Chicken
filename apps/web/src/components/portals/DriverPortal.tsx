@@ -2,26 +2,33 @@
 
 import React, { useState, useEffect } from "react";
 import { api } from "@/lib/api";
-import { 
-  Truck, 
-  MapPin, 
-  Phone, 
-  CheckCircle2, 
-  
-  Camera, 
-  FileSignature, 
-  Key, 
+import { AppShell } from "@/components/ui/AppShell";
+import { Sk, SkCard } from "@/components/ui/Skeleton";
+import { Banner, EmptyState, ErrorState, StatusBadge } from "@/components/ui/States";
+import {
+  Truck,
+  MapPin,
+  Phone,
+  CheckCircle2,
+  FileSignature,
   X,
-  Scale
+  Scale,
+  RefreshCw,
+  Loader2,
 } from "lucide-react";
 
+type ViewKey = "deliveries";
+
 export function DriverPortal() {
+  const [view, setView] = useState<ViewKey>("deliveries");
   const [deliveries, setDeliveries] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedDelivery, setSelectedDelivery] = useState<any>(null);
+  const [error, setError] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
+  const [selectedDelivery, setSelectedDelivery] = useState<any>(null);
+  const [submitting, setSubmitting] = useState(false);
 
-  // POD Form fields
+  // POD form
   const [otpCode, setOtpCode] = useState("1234");
   const [recipientName, setRecipientName] = useState("Executive Chef Kitchen Receiving");
   const [acceptedWeight, setAcceptedWeight] = useState<number>(0);
@@ -30,11 +37,11 @@ export function DriverPortal() {
 
   const loadData = async () => {
     setLoading(true);
+    setError(null);
     try {
-      const data = await api.driver.getDeliveries();
-      setDeliveries(data);
+      setDeliveries(await api.driver.getDeliveries());
     } catch (err: any) {
-      setMsg(`Error: ${err.message}`);
+      setError(err.message);
     } finally {
       setLoading(false);
     }
@@ -53,8 +60,9 @@ export function DriverPortal() {
 
   const handleCompletePOD = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedDelivery) return;
-
+    if (!selectedDelivery || submitting) return;
+    setSubmitting(true);
+    setError(null);
     try {
       await api.driver.capturePOD(selectedDelivery.delivery_id, {
         pod_type: "OTP",
@@ -66,254 +74,276 @@ export function DriverPortal() {
         quantity_rejected_kg: Number(rejectedWeight || 0),
         rejection_reason: rejectionReason || undefined,
       });
-
-      setMsg(`Proof of Delivery recorded for Order ${selectedDelivery.order_number}! Status: DELIVERED.`);
+      setMsg(`POD recorded — ${selectedDelivery.order_number} is DELIVERED.`);
       setSelectedDelivery(null);
       loadData();
     } catch (err: any) {
-      alert(err.message);
+      setError(err.message);
+    } finally {
+      setSubmitting(false);
     }
   };
 
-  if (loading) {
-    return (
-      <div className="space-y-6 animate-pulse">
-        {/* Header Skeleton */}
-        <div className="bg-white p-6 rounded-xl border border-slate-200 flex justify-between items-center">
-          <div className="h-6 bg-slate-200 rounded w-48"></div>
-          <div className="h-4 bg-slate-200 rounded w-24"></div>
-        </div>
-        
-        {/* Deliveries List Skeleton */}
-        <div className="space-y-4">
-          <div className="h-5 bg-slate-200 rounded w-40"></div>
-          {[1, 2].map(i => (
-            <div key={i} className="bg-white p-5 rounded-xl border border-slate-200 space-y-4">
-              <div className="flex justify-between">
-                <div className="h-5 bg-slate-200 rounded w-1/4"></div>
-                <div className="h-6 bg-slate-200 rounded-full w-24"></div>
-              </div>
-              <div className="h-4 bg-slate-200 rounded w-2/4"></div>
-              <div className="h-10 bg-slate-200 rounded-lg w-full mt-4"></div>
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  }
+  const active = deliveries.filter((d) => d.status !== "DELIVERED");
+  const done = deliveries.filter((d) => d.status === "DELIVERED");
+
+  const nav = [
+    { key: "deliveries", label: "Deliveries", icon: Truck, badge: active.length || undefined },
+  ];
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex justify-between items-center">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
-            <Truck className="w-6 h-6 text-blue-600" />
-            Driver & Fulfillment Dispatch
-          </h1>
-          <p className="text-xs text-slate-500 mt-1">
-            Pick up from verified supplier plants and capture immutable Proof of Delivery (POD) at recipient facilities.
-          </p>
-        </div>
+    <AppShell
+      nav={nav}
+      activeKey={view}
+      onNavigate={() => {}}
+      breadcrumb={["Driver", "Delivery runs"]}
+      subtitle="Cold-chain dispatch & POD"
+      actions={
         <button
           onClick={loadData}
-          className="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium px-3 py-1.5 rounded-lg transition"
+          disabled={loading}
+          className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-md transition"
+          aria-label="Refresh jobs"
         >
-          Refresh Jobs
+          <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
         </button>
-      </div>
+      }
+    >
+      <div className="space-y-4 max-w-5xl mx-auto">
+        {msg && <Banner message={msg} onDismiss={() => setMsg(null)} />}
+        {error && <Banner message={error} onDismiss={() => setError(null)} tone="error" />}
 
-      {msg && (
-        <div className="p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-lg text-sm flex items-center justify-between">
-          <span>{msg}</span>
-          <button onClick={() => setMsg(null)} className="text-xs font-bold text-emerald-900">Dismiss</button>
-        </div>
-      )}
-
-      {/* Deliveries List */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-        {deliveries.length === 0 ? (
-          <div className="col-span-2 text-center py-12 text-slate-400 text-sm bg-white rounded-xl border">
-            No delivery runs currently assigned to this driver.
+        {loading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <SkCard /><SkCard /><SkCard />
+          </div>
+        ) : error && deliveries.length === 0 ? (
+          <div className="bg-white border border-slate-200 rounded-md">
+            <ErrorState
+              title="Couldn't load delivery jobs"
+              description={error}
+              onRetry={loadData}
+            />
+          </div>
+        ) : deliveries.length === 0 ? (
+          <div className="bg-white border border-slate-200 rounded-md">
+            <EmptyState
+              icon={Truck}
+              title="No delivery runs assigned"
+              description="When an admin assigns a packed order to you, it will appear here with pickup and drop-off details."
+              action={
+                <button
+                  onClick={loadData}
+                  className="px-3 py-1.5 bg-slate-900 text-white text-xs font-bold rounded-md hover:bg-slate-800 transition"
+                >
+                  Check again
+                </button>
+              }
+            />
           </div>
         ) : (
-          deliveries.map((d) => (
-            <div
-              key={d.delivery_id}
-              className="bg-white rounded-xl border border-slate-200 shadow-sm p-5 space-y-4 hover:border-slate-300 transition"
-            >
-              <div className="flex justify-between items-start">
-                <div>
-                  <span className="font-mono font-bold text-sm text-slate-900">{d.order_number}</span>
-                  <div className="text-xs text-slate-500">Vehicle: {d.vehicle_number || "Cold-Van 01"}</div>
-                </div>
-                <span
-                  className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${
-                    d.status === "DELIVERED"
-                      ? "bg-emerald-100 text-emerald-800 border border-emerald-300"
-                      : "bg-blue-100 text-blue-800 border border-blue-300"
-                  }`}
+          <>
+            {/* KPI strip */}
+            <div className="grid grid-cols-3 gap-3">
+              {[
+                ["Assigned", deliveries.length],
+                ["In progress", active.length],
+                ["Delivered", done.length],
+              ].map(([l, v]) => (
+                <div
+                  key={l}
+                  className="bg-white border border-slate-200 rounded-md p-3"
                 >
-                  {d.status}
-                </span>
-              </div>
-
-              {/* Addresses */}
-              <div className="space-y-2 text-xs">
-                <div className="p-2.5 bg-slate-50 rounded-lg border border-slate-100">
-                  <div className="font-semibold text-slate-700 flex items-center gap-1.5 mb-0.5">
-                    <MapPin className="w-3.5 h-3.5 text-amber-600" />
-                    Pickup (Supplier Plant)
+                  <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">
+                    {l}
                   </div>
-                  <div className="text-slate-600">{d.pickup_address}</div>
+                  <div className="text-xl font-bold text-slate-900 tnum">{v}</div>
                 </div>
-
-                <div className="p-2.5 bg-slate-50 rounded-lg border border-slate-100">
-                  <div className="font-semibold text-slate-700 flex items-center gap-1.5 mb-0.5">
-                    <MapPin className="w-3.5 h-3.5 text-emerald-600" />
-                    Drop-off (Buyer Kitchen)
-                  </div>
-                  <div className="text-slate-600">{d.delivery_address}</div>
-                  <div className="text-slate-500 mt-1 flex items-center gap-1">
-                    <Phone className="w-3 h-3" /> Contact: {d.buyer_phone}
-                  </div>
-                </div>
-              </div>
-
-              {/* Consignment Weight */}
-              <div className="flex justify-between items-center text-xs p-2 bg-blue-50/50 rounded-lg border border-blue-100">
-                <span className="text-slate-600 font-medium flex items-center gap-1">
-                  <Scale className="w-3.5 h-3.5 text-blue-600" /> Total Net Weight:
-                </span>
-                <span className="font-mono font-bold text-slate-900">{d.total_weight_kg} kg</span>
-              </div>
-
-              {/* Action */}
-              {d.status !== "DELIVERED" ? (
-                <button
-                  onClick={() => handleOpenPOD(d)}
-                  className="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-lg transition shadow"
-                >
-                  Capture Proof of Delivery (POD)
-                </button>
-              ) : (
-                <div className="text-center py-2 text-xs font-semibold text-emerald-700 bg-emerald-50 rounded-lg border border-emerald-200 flex items-center justify-center gap-1.5">
-                  <CheckCircle2 className="w-4 h-4" /> Delivered & Handover Completed
-                </div>
-              )}
+              ))}
             </div>
-          ))
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {deliveries.map((d) => (
+                <div
+                  key={d.delivery_id}
+                  className="bg-white rounded-md border border-slate-200 p-4 space-y-3"
+                >
+                  <div className="flex justify-between items-start gap-2">
+                    <div className="min-w-0">
+                      <span className="tnum font-bold text-sm text-slate-900">
+                        {d.order_number}
+                      </span>
+                      <div className="text-[11px] text-slate-500">
+                        Vehicle: {d.vehicle_number || "Cold-Van 01"}
+                      </div>
+                    </div>
+                    <StatusBadge status={d.status} />
+                  </div>
+
+                  <div className="space-y-2 text-xs">
+                    <div className="p-2.5 bg-amber-50/60 rounded-md border border-amber-100">
+                      <div className="font-bold text-slate-700 flex items-center gap-1.5 mb-0.5 text-[10px] uppercase tracking-wide">
+                        <MapPin className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                        Pickup — supplier plant
+                      </div>
+                      <div className="text-slate-600 break-words">
+                        {d.pickup_address}
+                      </div>
+                    </div>
+                    <div className="p-2.5 bg-emerald-50/60 rounded-md border border-emerald-100">
+                      <div className="font-bold text-slate-700 flex items-center gap-1.5 mb-0.5 text-[10px] uppercase tracking-wide">
+                        <MapPin className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                        Drop-off — buyer kitchen
+                      </div>
+                      <div className="text-slate-600 break-words">
+                        {d.delivery_address}
+                      </div>
+                      <div className="text-slate-500 mt-1 flex items-center gap-1">
+                        <Phone className="w-3 h-3 shrink-0" /> {d.buyer_phone}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-between items-center text-xs px-2.5 py-2 bg-slate-50 rounded-md border border-slate-100">
+                    <span className="text-slate-600 font-medium flex items-center gap-1">
+                      <Scale className="w-3.5 h-3.5 text-slate-500" /> Net weight
+                    </span>
+                    <span className="tnum font-bold text-slate-900">
+                      {d.total_weight_kg} kg
+                    </span>
+                  </div>
+
+                  {d.status !== "DELIVERED" ? (
+                    <button
+                      onClick={() => handleOpenPOD(d)}
+                      className="w-full py-2.5 bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs rounded-md transition flex items-center justify-center gap-1.5 min-h-[44px]"
+                    >
+                      <FileSignature className="w-4 h-4" />
+                      Capture proof of delivery
+                    </button>
+                  ) : (
+                    <div className="text-center py-2.5 text-xs font-bold text-emerald-700 bg-emerald-50 rounded-md border border-emerald-200 flex items-center justify-center gap-1.5">
+                      <CheckCircle2 className="w-4 h-4" /> Delivered — handover complete
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </>
         )}
       </div>
 
-      {/* POD Modal */}
+      {/* POD modal */}
       {selectedDelivery && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-xl max-w-md w-full p-6 space-y-4 shadow-xl text-xs">
-            <div className="flex justify-between items-center border-b pb-3">
-              <h3 className="font-bold text-slate-900 text-base flex items-center gap-2">
-                <FileSignature className="w-5 h-5 text-blue-600" />
-                Capture Proof of Delivery (POD)
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg max-w-md w-full p-5 space-y-4 shadow-xl text-xs max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center border-b border-slate-200 pb-3">
+              <h3 className="font-bold text-slate-900 text-sm flex items-center gap-2">
+                <FileSignature className="w-4 h-4 text-sky-600" />
+                Proof of delivery — {selectedDelivery.order_number}
               </h3>
-              <button onClick={() => setSelectedDelivery(null)} className="text-slate-400 hover:text-slate-600">
-                <X className="w-5 h-5" />
+              <button
+                onClick={() => setSelectedDelivery(null)}
+                className="text-slate-400 hover:text-slate-600"
+                aria-label="Close"
+              >
+                <X className="w-4 h-4" />
               </button>
             </div>
 
             <form onSubmit={handleCompletePOD} className="space-y-3">
               <div>
-                <label className="font-semibold text-slate-700 block mb-1">
-                  Buyer Verification OTP
+                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-1">
+                  Buyer verification OTP
                 </label>
                 <input
                   type="text"
+                  inputMode="numeric"
                   value={otpCode}
                   onChange={(e) => setOtpCode(e.target.value)}
-                  className="w-full p-2 border border-slate-300 rounded-lg font-mono font-bold tracking-widest text-center text-sm"
+                  className="w-full px-3 py-3 border border-slate-300 rounded-md tnum font-bold tracking-[0.4em] text-center text-base min-h-[44px]"
                   required
                 />
               </div>
-
               <div>
-                <label className="font-semibold text-slate-700 block mb-1">
-                  Recipient Authorized Name
+                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-1">
+                  Authorized recipient
                 </label>
                 <input
                   type="text"
                   value={recipientName}
                   onChange={(e) => setRecipientName(e.target.value)}
-                  className="w-full p-2 border border-slate-300 rounded-lg"
+                  className="w-full px-2.5 py-2.5 border border-slate-300 rounded-md min-h-[44px]"
                   required
                 />
               </div>
-
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="font-semibold text-slate-700 block mb-1">
-                    Accepted Net Qty (kg)
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-1">
+                    Accepted (kg)
                   </label>
                   <input
                     type="number"
                     step="0.01"
                     value={acceptedWeight}
                     onChange={(e) => setAcceptedWeight(Number(e.target.value))}
-                    className="w-full p-2 border border-slate-300 rounded-lg font-bold"
+                    className="w-full px-2.5 py-2.5 border border-slate-300 rounded-md tnum font-bold min-h-[44px]"
                     required
                   />
                 </div>
                 <div>
-                  <label className="font-semibold text-slate-700 block mb-1">
-                    Rejected Qty (kg)
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-1">
+                    Rejected (kg)
                   </label>
                   <input
                     type="number"
                     step="0.01"
                     value={rejectedWeight}
                     onChange={(e) => setRejectedWeight(Number(e.target.value))}
-                    className="w-full p-2 border border-slate-300 rounded-lg font-bold text-rose-600"
+                    className="w-full px-2.5 py-2.5 border border-slate-300 rounded-md tnum font-bold text-rose-600 min-h-[44px]"
                   />
                 </div>
               </div>
-
               {rejectedWeight > 0 && (
                 <div>
-                  <label className="font-semibold text-slate-700 block mb-1">
-                    Rejection Reason
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-1">
+                    Rejection reason
                   </label>
                   <input
                     type="text"
                     value={rejectionReason}
                     onChange={(e) => setRejectionReason(e.target.value)}
-                    placeholder="e.g., Temperature spike or torn crate"
-                    className="w-full p-2 border border-slate-300 rounded-lg"
+                    placeholder="e.g., temperature spike, torn crate"
+                    className="w-full px-2.5 py-2.5 border border-slate-300 rounded-md"
                     required
                   />
                 </div>
               )}
-
-              <div className="p-2.5 bg-slate-50 border rounded-lg text-[11px] text-slate-500">
-                Submitting records an immutable audit record and confirms order completion.
+              <div className="p-2.5 bg-slate-50 border border-slate-100 rounded-md text-[10px] text-slate-500">
+                Submitting records an immutable audit entry and completes the
+                order lifecycle.
               </div>
-
-              <div className="pt-2 flex justify-end gap-2">
+              <div className="pt-1 flex justify-end gap-2">
                 <button
                   type="button"
                   onClick={() => setSelectedDelivery(null)}
-                  className="px-4 py-2 border rounded-lg text-slate-600 hover:bg-slate-50"
+                  className="px-3 py-2.5 border border-slate-300 rounded-md text-slate-600 hover:bg-slate-50 min-h-[44px]"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-lg shadow"
+                  disabled={submitting}
+                  className="px-4 py-2.5 bg-sky-600 hover:bg-sky-700 disabled:bg-slate-300 text-white font-bold rounded-md flex items-center gap-1.5 min-h-[44px]"
                 >
-                  Complete Delivery & Record POD
+                  {submitting && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                  Complete delivery
                 </button>
               </div>
             </form>
           </div>
         </div>
       )}
-    </div>
+    </AppShell>
   );
 }

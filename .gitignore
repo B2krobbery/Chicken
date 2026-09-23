@@ -52,3 +52,6 @@ uploads/
 .vscode/
 .agents/
 skills-lock.json
+
+# Build artifacts
+*.tsbuildinfo

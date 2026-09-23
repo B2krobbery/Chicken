@@ -11,8 +11,11 @@ TheChickenMan is an institutional-grade B2B digital marketplace connecting vette
 
 ## Repository structure
 - `/apps/web/`: Next.js 14 frontend application (React, Tailwind CSS).
-  - `src/components/portals/`: Contains role-specific UI (AdminPortal, SupplierPortal, BuyerPortal, DriverPortal).
+  - `src/components/portals/`: Contains role-specific UI (AdminPortal, SupplierPortal, BuyerPortal, DriverPortal). Each portal is a single-page dashboard that renders inside the shared `AppShell` and switches between named views via internal state (no router).
+  - `src/components/ui/`: Shared design-system primitives — `AppShell` (dark-slate sidebar + topbar, role-aware nav, breadcrumbs, env chip, user menu), `Skeleton` (`Sk`, `SkText`, `SkTableRows`, `SkCard`, `SkKpi`), `States` (`StatusBadge`, `EmptyState`, `ErrorState`, `Banner`), `Splash` (branded entry screen).
+  - `src/components/OrderTimelineTracker.tsx`, `GSTTaxInvoiceModal.tsx`: Shared order/invoice components.
   - `src/lib/api.ts`: API wrapper for communicating with the backend.
+- `/.stitch/designs/`: Downloaded Stitch design artifacts (screenshots, design tokens).
 - `/backend/`: FastAPI Python backend application.
   - `app/`: Core application modules categorized by domain (admin, auth, buyers, carts, catalogue, inventory, invoices, logistics, models, notifications, orders, payments, pricing, suppliers).
   - `app/models/`: SQLAlchemy database models.
@@ -22,7 +25,30 @@ TheChickenMan is an institutional-grade B2B digital marketplace connecting vette
 - `/docs/`: Project documentation, including the `IMPLEMENTATION_STATUS.md` matrix.
 
 ## Tech stack
-- **Frontend**: Next.js 14, React 18, Tailwind CSS, Lucide Icons.
+- **Frontend**: Next.js 14, React 18, Tailwind CSS, Lucide Icons, Inter (UI) + JetBrains Mono (tabular numerals — `.tnum` class for prices/quantities/order numbers).
+
+## Frontend design system ("ChickenMan Ops")
+- **Source**: Google Stitch project `7677945534075423788`, design system "ChickenMan Ops" (LIGHT, ROUND_FOUR, custom color `#ea580c`, Inter + JetBrains Mono). Generated artifacts live in `/.stitch/designs/`.
+- **Shell surfaces**: deep slate — `shell-900 #0f172a` sidebar, `shell-800 #1e293b` elevated, `shell-700 #334155` dividers; `slate-50` text, `slate-400` muted.
+- **Canvas**: `slate-50` page, white surfaces, `slate-200` borders, `slate-900` primary text.
+- **Accent**: `brand-600 #ea580c` (hover `brand-700`) for primary actions only; sidebar active item uses `brand-600/15` bg + `brand-400` text.
+- **Status semantics** (`StatusBadge`): PENDING/CONFIRMED amber, PROCESSING blue, PACKED indigo, DISPATCHED/IN_TRANSIT sky, DELIVERED/APPROVED/SUCCESS emerald, CANCELLED/REJECTED/FAILED rose, REFUNDED slate.
+- **Density**: compact tables (36–40px rows, `px-3 py-2` cells, `text-xs`), `space-y-4` section rhythm, `text-[10px]/[11px]` metadata, no oversized cards/headers.
+- **Typography**: `text-sm` titles, `text-xs` body/table, `text-[10px]–[11px]` captions; numerals always `.tnum`.
+- **Radius**: `rounded-md` for cards/buttons, `rounded-full` for badges.
+
+## Loading / empty / error system
+- **Splash**: `SplashScreen` with brand pulse + a real stage label (never fake progress).
+- **Skeletons**: `.skeleton` shimmer class in `globals.css` (respects `prefers-reduced-motion`); every major view has a matching skeleton (`SkKpi`, `SkCard`, `SkTableRows`) that preserves final layout — views gate on `loading`/null-data, never flash EmptyState while loading.
+- **Empty states**: `EmptyState` — icon + title + explanation + real action (no invented actions).
+- **Error states**: `ErrorState` (full + `compact` banner variant) and `Banner` (success/error toasts). API failures surface honestly with retry where a loader exists.
+
+## Responsive strategy
+- Sidebar `lg:` fixed (w-60); below `lg` it collapses to a hamburger-drawer overlay.
+- Grids: `grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4` for marketplace; `grid-cols-2 lg:grid-cols-4` for KPIs.
+- Tables live in `overflow-x-auto` wrappers and hide non-essential columns on small screens (`hidden md:table-cell`) so nothing overflows the viewport at 320px.
+- Driver/POD touch targets are `min-h-[44px]`.
+- Content column is fluid with `max-w-[1600px]`; verified at 320, 390, 768, 1280, 1440, 1920.
 - **Backend**: Python 3.12+, FastAPI, SQLAlchemy 2.0, Alembic, Pydantic, Passlib (bcrypt), python-jose (JWT), reportlab (PDF generation).
 - **Database**: PostgreSQL (psycopg2-binary).
 - **Deployment**: Vercel (Frontend + FastAPI serverless API), Supabase (hosted Postgres).
@@ -76,7 +102,7 @@ The following environment variables are required. See `.env.example` in the root
 - `LOG_LEVEL`: Logging verbosity.
 - `PORT` & `HOST`: Backend server binding.
 - `STORAGE_LOCAL_PATH`: Local path for storing generated PDFs and uploads (`/tmp/uploads` on Vercel — function filesystems are read-only outside `/tmp`; files are ephemeral).
-- `DB_POOL_SIZE` / `DB_MAX_OVERFLOW`: SQLAlchemy pool sizing (defaults 20/10 for local; set to `2`/`0` on Vercel serverless).
+- `DB_POOL_SIZE` / `DB_MAX_OVERFLOW`: SQLAlchemy pool sizing (defaults 20/10 for local; set to `2`/`0` on Vercel serverless). **On Vercel the engine uses `NullPool` automatically** (`VERCEL` env detected in `app/core/database.py`) so these are ignored there — each request opens/closes a fresh pooler connection; see "Supavisor pool exhaustion" in Known issues.
 - `PAYMENT_PROVIDER`: Configures payment gateway (currently `MOCK`).
 - `NOTIFICATION_PROVIDER`: Configures notifications (currently `MOCK`).
 - `NEXT_PUBLIC_API_URL`: (Frontend) Configures the backend API endpoint. Production value: `https://chicken-api-mauve.vercel.app/api/v1`.
@@ -124,8 +150,10 @@ Review the complete requirement breakdown here:
 [Implementation Status](docs/IMPLEMENTATION_STATUS.md)
 
 ## Known issues
+- **Supavisor pool exhaustion (mitigated by NullPool)**: Vercel warm instances used to hold pooled connections open; under session-mode pooling each held a server-side slot until the free-tier pool filled and every DB-backed endpoint returned 500 (`/health` stayed green). Fixed by using `NullPool` on Vercel. **Requires a `chicken-api` redeploy to take effect.** Manual recovery if it recurs: `SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE usename='chicken_app' AND state='idle';` via Supabase SQL.
+- **Intermittent 500/CORS on cold starts**: under burst load some serverless invocations fail before the app runs (browser may report them as CORS blocks). Usually transient — retry. UI surfaces these honestly via error banners.
+- **API latency**: DB-backed calls from the Vercel function take ~3–4s (pooler connect latency per request with NullPool). Frontend fires them in parallel.
 - **Ephemeral file storage on Vercel**: invoice PDFs and uploads are written under `/tmp/uploads` inside the serverless function; they do not persist across instances. Regeneration works, but durable object storage (e.g. Supabase Storage/S3) is needed for production.
-- **Serverless cold starts**: the first request to an idle API function may take a few seconds.
 - **Mocked Integrations**: Payments and Notifications use mock providers. A real gateway (e.g., Razorpay, AWS SES) needs to be integrated for production use.
 
 ## Testing checklist
