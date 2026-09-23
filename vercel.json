@@ -5,12 +5,12 @@
   "buildCommand": "npm --prefix apps/web run build",
   "outputDirectory": "apps/web/.next",
   "rewrites": [
-    { "source": "/api/(.*)", "destination": "/api/index.py" },
-    { "source": "/health", "destination": "/api/index.py" },
-    { "source": "/ready", "destination": "/api/index.py" }
+    { "source": "/api/v1/(.*)", "destination": "/api/v1" },
+    { "source": "/health", "destination": "/api/v1" },
+    { "source": "/ready", "destination": "/api/v1" }
   ],
   "functions": {
-    "api/index.py": {
+    "api/v1.py": {
       "maxDuration": 60
     }
   }
