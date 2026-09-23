@@ -97,3 +97,15 @@ body {
     animation: none;
   }
 }
+
+/* In-flight request indicator (AppShell topbar) */
+@keyframes busybar {
+  0% { transform: translateX(-120%); }
+  100% { transform: translateX(320%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [class*="busybar"] {
+    animation: none;
+  }
+}

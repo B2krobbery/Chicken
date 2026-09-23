@@ -94,6 +94,7 @@ export function DriverPortal() {
 
   return (
     <AppShell
+      busy={loading || submitting}
       nav={nav}
       activeKey={view}
       onNavigate={() => {}}

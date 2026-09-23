@@ -728,6 +728,7 @@ export function BuyerPortal() {
 
   return (
     <AppShell
+      busy={loading || cartBusy}
       nav={nav}
       activeKey={view}
       onNavigate={(k) => setView(k as ViewKey)}

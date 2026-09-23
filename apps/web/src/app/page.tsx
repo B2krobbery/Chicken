@@ -56,14 +56,33 @@ const DEMO_ROLES = [
 ];
 
 export default function HomePage() {
-  const { user, role, loading, switchUser, login } = useAuth();
+  const { user, role, loading, bootStage, switchUser, login } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loginErr, setLoginErr] = useState<string | null>(null);
   const [signingIn, setSigningIn] = useState<string | null>(null);
 
   if (loading) {
-    return <SplashScreen stage="Checking your session…" />;
+    const stageIndex =
+      bootStage === "connect" ? 0 : bootStage === "session" ? 1 : 2;
+    return (
+      <SplashScreen
+        steps={[
+          {
+            label: "Connecting to ChickenMan API",
+            state: stageIndex > 0 ? "done" : "active",
+          },
+          {
+            label: "Verifying your session",
+            state: stageIndex > 1 ? "done" : stageIndex === 1 ? "active" : "pending",
+          },
+          {
+            label: "Loading your workspace",
+            state: stageIndex > 1 ? "active" : "pending",
+          },
+        ]}
+      />
+    );
   }
 
   if (user && role) {

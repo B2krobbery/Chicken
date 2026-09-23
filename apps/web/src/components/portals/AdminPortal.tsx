@@ -403,6 +403,7 @@ export function AdminPortal() {
 
   return (
     <AppShell
+      busy={loading}
       nav={nav}
       activeKey={view}
       onNavigate={(k) => setView(k as ViewKey)}

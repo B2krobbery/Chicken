@@ -556,6 +556,7 @@ export function SupplierPortal() {
 
   return (
     <AppShell
+      busy={loading}
       nav={nav}
       activeKey={view}
       onNavigate={(k) => setView(k as ViewKey)}

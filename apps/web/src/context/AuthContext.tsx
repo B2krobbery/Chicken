@@ -14,12 +14,15 @@ export interface User {
   kyc_status?: string;
 }
 
+export type BootStage = "connect" | "session" | "profile" | "done";
+
 interface AuthContextType {
   user: User | null;
   token: string | null;
   role: string | null;
   kycStatus: string | null;
   loading: boolean;
+  bootStage: BootStage;
   login: (email: string, password: string) => Promise<any>;
   logout: () => void;
   switchUser: (role: "ADMIN" | "SUPPLIER" | "BUYER" | "DRIVER") => Promise<void>;
@@ -31,11 +34,18 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  // Only show the boot splash when a saved session exists to verify —
+  // a fresh visit goes straight to the login screen.
+  const [loading, setLoading] = useState(
+    () => typeof window !== "undefined" && !!localStorage.getItem("token")
+  );
+  const [bootStage, setBootStage] = useState<BootStage>("connect");
 
   const fetchCurrentUser = async () => {
+    setBootStage("session");
     try {
       const data = await api.auth.getMe();
+      setBootStage("profile");
       setUser(data);
     } catch {
       setUser(null);
@@ -51,17 +61,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (savedToken) {
       setToken(savedToken);
       fetchCurrentUser();
-    } else {
-      setLoading(false);
     }
   }, []);
 
   const login = async (email: string, password: string) => {
-    const res = await api.auth.login({ email, password });
-    localStorage.setItem("token", res.access_token);
-    setToken(res.access_token);
-    await fetchCurrentUser();
-    return res;
+    setBootStage("connect");
+    setLoading(true);
+    try {
+      const res = await api.auth.login({ email, password });
+      localStorage.setItem("token", res.access_token);
+      setToken(res.access_token);
+      await fetchCurrentUser();
+      return res;
+    } catch (err) {
+      setLoading(false);
+      throw err;
+    }
   };
 
   const logout = () => {
@@ -102,6 +117,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         role: currentRole,
         kycStatus: user?.kyc_status || null,
         loading,
+        bootStage,
         login,
         logout,
         switchUser,

@@ -33,6 +33,7 @@ export function AppShell({
   title,
   subtitle,
   actions,
+  busy,
   children,
 }: {
   nav: NavItem[];
@@ -42,6 +43,7 @@ export function AppShell({
   title?: string;
   subtitle?: string;
   actions?: React.ReactNode;
+  busy?: boolean;
   children: React.ReactNode;
 }) {
   const { user, role, kycStatus, logout } = useAuth();
@@ -182,7 +184,7 @@ export function AppShell({
       {/* Main column */}
       <div className="flex-1 min-w-0 lg:ml-60 flex flex-col min-h-screen">
         {/* Top bar */}
-        <header className="h-12 lg:h-14 bg-white border-b border-slate-200 sticky top-0 z-30 flex items-center gap-3 lg:gap-4 px-3 sm:px-4 lg:px-6">
+        <header className="h-12 lg:h-14 bg-white border-b border-slate-200 sticky top-0 z-30 flex items-center gap-3 lg:gap-4 px-3 sm:px-4 lg:px-6 relative">
           <button
             onClick={() => setMobileNavOpen(true)}
             className="lg:hidden p-1.5 -ml-1 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-md"
@@ -281,6 +283,12 @@ export function AppShell({
               >
                 <LogOut className="w-3.5 h-3.5" /> Sign out
               </button>
+            </div>
+          )}
+          {/* In-flight data indicator — visible only while requests run */}
+          {busy && (
+            <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-brand-500/15 overflow-hidden">
+              <div className="h-full w-1/3 bg-brand-500 animate-[busybar_1.1s_ease-in-out_infinite]" />
             </div>
           )}
         </header>
