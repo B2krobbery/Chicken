@@ -4,8 +4,13 @@
   "installCommand": "npm --prefix apps/web install",
   "buildCommand": "npm --prefix apps/web run build",
   "outputDirectory": "apps/web/.next",
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/api/index.py" },
+    { "source": "/health", "destination": "/api/index.py" },
+    { "source": "/ready", "destination": "/api/index.py" }
+  ],
   "functions": {
-    "api/**/*.py": {
+    "api/index.py": {
       "maxDuration": 60
     }
   }
