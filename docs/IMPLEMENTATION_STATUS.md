@@ -3,7 +3,7 @@
 ## Summary
 The codebase contains a highly modular FastAPI backend (PostgreSQL + SQLAlchemy) and a Next.js 14 frontend. The local implementation of Phase 1 is **COMPLETE** in source code. All APIs, database schemas, and frontend UI components are present. 
 
-However, **deployment validation is BLOCKED/UNVERIFIED**. The deployed frontend `https://chicken-b2k1.vercel.app/` is protected by Vercel Authentication (SSO/Passkey) and is inaccessible for public end-to-end testing. Furthermore, no production backend URL is hardcoded or exposed in the repository; the frontend falls back to `http://localhost:8000/api/v1` by default unless `NEXT_PUBLIC_API_URL` is set in Vercel's private environment variables.
+However, **end-to-end deployment validation is still limited**. The production site `https://chicken-kappa-six.vercel.app/` is publicly accessible, and the FastAPI backend is deployed as a separate Vercel project (`chicken-api`, `framework: fastapi`, root dir `backend/`) backed by the hosted Supabase Postgres — previously the frontend pointed at `localhost:8000` and the documented URL `chicken-b2k1.vercel.app` was a stale SSO-locked alias. Serverless caveats: invoice PDFs/uploaded files use ephemeral `/tmp` storage, idle functions cold-start, and the API project is not git-linked (backend changes need a manual `create_deployment` call until the repo is linked in the dashboard).
 
 Additionally, Payment (P1-24) and Notifications (P1-23) are implemented using **Mock Providers** (`MockPaymentProvider`, `MockNotificationProvider`). There are no integrations with real providers like Razorpay or AWS SES.
 
