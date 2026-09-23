@@ -12,6 +12,16 @@ The platform standardizes SKU definitions, enforces food safety and tax complian
 
 ---
 
+## Live Demo
+
+- **Frontend (production)**: [https://chicken-kappa-six.vercel.app](https://chicken-kappa-six.vercel.app) — Next.js app on Vercel
+- **Backend API**: [https://chicken-api-mauve.vercel.app](https://chicken-api-mauve.vercel.app) — FastAPI on Vercel (`/health`, `/docs`, base path `/api/v1`)
+- **Database**: Supabase Postgres
+
+Use the seeded demo credentials in [Section 3](#3-seeded-demonstration-credentials) to sign in as Admin, Supplier, Buyer, or Driver.
+
+---
+
 ## 1. System Topology & Architecture
 
 ```
