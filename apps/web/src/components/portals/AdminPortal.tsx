@@ -139,11 +139,11 @@ export function AdminPortal() {
     cols: string[]
   ) => (
     <div className="bg-white border border-slate-200 rounded-md overflow-hidden">
-      <div className="px-3 py-2.5 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
-        <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wide">
+      <div className="px-3 lg:px-4 py-2.5 lg:py-3 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
+        <h3 className="text-xs lg:text-sm font-bold text-slate-800 uppercase tracking-wide">
           {kind === "supplier" ? "Supplier" : "Buyer"} verification queue
         </h3>
-        <span className="text-[11px] text-slate-400">
+        <span className="text-[11px] lg:text-xs text-slate-400">
           {kind === "supplier"
             ? "Only approved suppliers can list SKUs"
             : "Unapproved buyers cannot order"}
@@ -157,13 +157,13 @@ export function AdminPortal() {
         />
       ) : (
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
+          <table className="w-full text-left text-xs lg:text-sm">
             <thead>
-              <tr className="border-b border-slate-200 bg-slate-50/60 text-slate-500 uppercase text-[10px] font-bold tracking-wide">
+              <tr className="border-b border-slate-200 bg-slate-50/60 text-slate-500 uppercase text-[11px] lg:text-xs font-bold tracking-wide">
                 {cols.map((c, i) => (
                   <th
                     key={c}
-                    className={`px-3 py-2 ${i === cols.length - 1 ? "text-right" : ""}`}
+                    className={`px-3 lg:px-4 py-2 ${i === cols.length - 1 ? "text-right" : ""}`}
                   >
                     {c}
                   </th>
@@ -173,46 +173,46 @@ export function AdminPortal() {
             <tbody className="divide-y divide-slate-100">
               {rows.map((r) => (
                 <tr key={r.id} className="hover:bg-slate-50/50">
-                  <td className="px-3 py-2.5">
+                  <td className="px-3 lg:px-4 py-2.5 lg:py-3">
                     <div className="font-semibold text-slate-900 break-words">
                       {r.business_name}
                     </div>
-                    <div className="text-[10px] text-slate-400">
+                    <div className="text-[11px] lg:text-xs text-slate-400">
                       {r.user_email}
                     </div>
                   </td>
                   {kind === "supplier" ? (
                     <>
-                      <td className="px-3 py-2.5 font-mono text-slate-600">
+                      <td className="px-3 lg:px-4 py-2.5 lg:py-3 font-mono text-slate-600">
                         {r.gstin || "Pending"}
                       </td>
-                      <td className="px-3 py-2.5 font-mono text-slate-600">
+                      <td className="px-3 lg:px-4 py-2.5 lg:py-3 font-mono text-slate-600">
                         {r.fssai || "Pending"}
                       </td>
-                      <td className="px-3 py-2.5 text-slate-600 tnum">
+                      <td className="px-3 lg:px-4 py-2.5 lg:py-3 text-slate-600 tnum">
                         {r.locations_count}
                       </td>
                     </>
                   ) : (
                     <>
-                      <td className="px-3 py-2.5 text-slate-600">{r.buyer_type}</td>
-                      <td className="px-3 py-2.5 font-mono text-slate-600">
+                      <td className="px-3 lg:px-4 py-2.5 lg:py-3 text-slate-600">{r.buyer_type}</td>
+                      <td className="px-3 lg:px-4 py-2.5 lg:py-3 font-mono text-slate-600">
                         {r.pan || "Pending"}
                       </td>
-                      <td className="px-3 py-2.5 font-mono text-slate-600">
+                      <td className="px-3 lg:px-4 py-2.5 lg:py-3 font-mono text-slate-600">
                         {r.fssai || "Pending"}
                       </td>
                     </>
                   )}
-                  <td className="px-3 py-2.5">
+                  <td className="px-3 lg:px-4 py-2.5 lg:py-3">
                     <StatusBadge status={r.kyc_status} pulse={r.kyc_status === "PENDING"} />
                   </td>
-                  <td className="px-3 py-2.5 text-right whitespace-nowrap space-x-1.5">
+                  <td className="px-3 lg:px-4 py-2.5 lg:py-3 text-right whitespace-nowrap space-x-1.5">
                     {r.kyc_status !== "APPROVED" && (
                       <button
                         onClick={() => handleKYC(kind, r.id, "APPROVE")}
                         disabled={actionBusy}
-                        className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-2.5 py-1 rounded-md text-[11px] disabled:opacity-40"
+                        className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-2.5 py-1.5 rounded-md text-[11px] lg:text-xs disabled:opacity-40"
                       >
                         Approve
                       </button>
@@ -221,7 +221,7 @@ export function AdminPortal() {
                       <button
                         onClick={() => handleKYC(kind, r.id, "REJECT")}
                         disabled={actionBusy}
-                        className="bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-bold px-2.5 py-1 rounded-md text-[11px] disabled:opacity-40"
+                        className="bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-bold px-2.5 py-1.5 rounded-md text-[11px] lg:text-xs disabled:opacity-40"
                       >
                         Reject
                       </button>
@@ -238,26 +238,26 @@ export function AdminPortal() {
 
   const overviewBody = (
     <div className="space-y-4">
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
         {kpis.map((k) => {
           const Icon = k.icon;
           return (
             <div
               key={k.label}
-              className="bg-white border border-slate-200 rounded-md p-3 flex items-center gap-3"
+              className="bg-white border border-slate-200 rounded-md p-3 lg:p-4 flex items-center gap-3 lg:gap-4"
             >
               <div className="p-2 bg-slate-100 text-slate-600 rounded-md shrink-0">
                 <Icon className="w-4 h-4" />
               </div>
               <div className="min-w-0">
-                <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wide truncate">
+                <div className="text-[11px] lg:text-xs font-bold text-slate-500 uppercase tracking-wide truncate">
                   {k.label}
                 </div>
-                <div className="text-lg font-bold text-slate-900 tnum truncate">
+                <div className="text-lg lg:text-2xl font-bold text-slate-900 tnum truncate">
                   {k.value}
                 </div>
                 <div
-                  className={`text-[10px] truncate ${
+                  className={`text-[11px] lg:text-xs truncate ${
                     k.warn ? "text-amber-600 font-semibold" : "text-slate-400"
                   }`}
                 >
@@ -269,7 +269,7 @@ export function AdminPortal() {
         })}
       </div>
       {pendingSuppliers.length > 0 && (
-        <div className="flex items-center gap-2 px-3 py-2.5 bg-amber-50 border border-amber-200 rounded-md text-xs text-amber-800">
+        <div className="flex items-center gap-2 px-3 lg:px-4 py-2.5 lg:py-3 bg-amber-50 border border-amber-200 rounded-md text-xs lg:text-sm text-amber-800">
           <ShieldAlert className="w-4 h-4 shrink-0" />
           <span>
             <strong>{pendingSuppliers.length}</strong> supplier
@@ -292,8 +292,8 @@ export function AdminPortal() {
 
   const driversBody = (
     <div className="bg-white border border-slate-200 rounded-md overflow-hidden">
-      <div className="px-3 py-2.5 bg-slate-50 border-b border-slate-200">
-        <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wide">
+      <div className="px-3 lg:px-4 py-2.5 lg:py-3 bg-slate-50 border-b border-slate-200">
+        <h3 className="text-xs lg:text-sm font-bold text-slate-800 uppercase tracking-wide">
           Delivery fleet
         </h3>
       </div>
@@ -305,27 +305,27 @@ export function AdminPortal() {
         />
       ) : (
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
+          <table className="w-full text-left text-xs lg:text-sm">
             <thead>
-              <tr className="border-b border-slate-200 bg-slate-50/60 text-slate-500 uppercase text-[10px] font-bold tracking-wide">
-                <th className="px-3 py-2">Driver</th>
-                <th className="px-3 py-2">Contact</th>
-                <th className="px-3 py-2">License</th>
+              <tr className="border-b border-slate-200 bg-slate-50/60 text-slate-500 uppercase text-[11px] lg:text-xs font-bold tracking-wide">
+                <th className="px-3 lg:px-4 py-2">Driver</th>
+                <th className="px-3 lg:px-4 py-2">Contact</th>
+                <th className="px-3 lg:px-4 py-2">License</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {drivers.map((d) => (
                 <tr key={d.id} className="hover:bg-slate-50/50">
-                  <td className="px-3 py-2.5 font-semibold text-slate-900">
+                  <td className="px-3 lg:px-4 py-2.5 lg:py-3 font-semibold text-slate-900">
                     {d.full_name}
                   </td>
-                  <td className="px-3 py-2.5 text-slate-600">
+                  <td className="px-3 lg:px-4 py-2.5 lg:py-3 text-slate-600">
                     {d.email}
-                    <div className="text-[10px] text-slate-400 font-mono">
+                    <div className="text-[11px] lg:text-xs text-slate-400 font-mono">
                       {d.phone_number}
                     </div>
                   </td>
-                  <td className="px-3 py-2.5 font-mono text-slate-600">
+                  <td className="px-3 lg:px-4 py-2.5 lg:py-3 font-mono text-slate-600">
                     {d.license_number || "—"}
                   </td>
                 </tr>
@@ -339,16 +339,16 @@ export function AdminPortal() {
 
   const auditBody = (
     <div className="bg-white border border-slate-200 rounded-md overflow-hidden">
-      <div className="px-3 py-2.5 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
+      <div className="px-3 lg:px-4 py-2.5 lg:py-3 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
         <div>
-          <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wide">
+          <h3 className="text-xs lg:text-sm font-bold text-slate-800 uppercase tracking-wide">
             Immutable audit log
           </h3>
-          <p className="text-[10px] text-slate-500">
+          <p className="text-[11px] lg:text-xs text-slate-500">
             KYC actions, price versions, stock movements, financial events
           </p>
         </div>
-        <span className="text-[11px] text-slate-400 tnum">
+        <span className="text-[11px] lg:text-xs text-slate-400 tnum">
           {auditLogs.length} entries
         </span>
       </div>
@@ -360,20 +360,20 @@ export function AdminPortal() {
         />
       ) : (
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-[11px]">
+          <table className="w-full text-left text-[11px] lg:text-xs">
             <thead>
-              <tr className="border-b border-slate-200 bg-slate-50/60 text-slate-500 uppercase text-[10px] font-bold tracking-wide">
-                <th className="px-3 py-2">Timestamp</th>
-                <th className="px-3 py-2">Action</th>
-                <th className="px-3 py-2">Entity</th>
-                <th className="px-3 py-2">Entity ID</th>
-                <th className="px-3 py-2">Details</th>
+              <tr className="border-b border-slate-200 bg-slate-50/60 text-slate-500 uppercase text-[11px] lg:text-xs font-bold tracking-wide">
+                <th className="px-3 lg:px-4 py-2">Timestamp</th>
+                <th className="px-3 lg:px-4 py-2">Action</th>
+                <th className="px-3 lg:px-4 py-2">Entity</th>
+                <th className="px-3 lg:px-4 py-2">Entity ID</th>
+                <th className="px-3 lg:px-4 py-2">Details</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 font-mono">
               {auditLogs.map((log) => (
                 <tr key={log.id} className="hover:bg-slate-50/50">
-                  <td className="px-3 py-2 text-slate-500 whitespace-nowrap">
+                  <td className="px-3 lg:px-4 py-2 text-slate-500 whitespace-nowrap">
                     {new Date(log.timestamp).toLocaleString("en-IN", {
                       day: "2-digit",
                       month: "short",
@@ -382,14 +382,14 @@ export function AdminPortal() {
                       second: "2-digit",
                     })}
                   </td>
-                  <td className="px-3 py-2 font-semibold text-purple-700 whitespace-nowrap">
+                  <td className="px-3 lg:px-4 py-2 font-semibold text-purple-700 whitespace-nowrap">
                     {log.action}
                   </td>
-                  <td className="px-3 py-2 text-slate-700">{log.entity_type}</td>
-                  <td className="px-3 py-2 text-slate-400 truncate max-w-[100px]">
+                  <td className="px-3 lg:px-4 py-2 text-slate-700">{log.entity_type}</td>
+                  <td className="px-3 lg:px-4 py-2 text-slate-400 truncate max-w-[100px]">
                     {String(log.entity_id).slice(0, 8)}…
                   </td>
-                  <td className="px-3 py-2 text-slate-500 truncate max-w-[280px]">
+                  <td className="px-3 lg:px-4 py-2 text-slate-500 truncate max-w-[280px]">
                     {JSON.stringify(log.new_values || log.old_values || {})}
                   </td>
                 </tr>
@@ -428,17 +428,17 @@ export function AdminPortal() {
         </button>
       }
     >
-      <div className="space-y-4 max-w-[1600px] mx-auto">
+      <div className="space-y-4 lg:space-y-6 max-w-[1600px] 2xl:max-w-[1760px] mx-auto">
         {msg && <Banner message={msg} onDismiss={() => setMsg(null)} />}
         {error && <Banner message={error} onDismiss={() => setError(null)} tone="error" />}
 
         {loading ? (
           <div className="space-y-4">
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
               <SkKpi /><SkKpi /><SkKpi /><SkKpi />
             </div>
             <div className="bg-white border border-slate-200 rounded-md overflow-hidden">
-              <div className="px-3 py-2.5 bg-slate-50 border-b border-slate-200">
+              <div className="px-3 lg:px-4 py-2.5 lg:py-3 bg-slate-50 border-b border-slate-200">
                 <Sk className="h-3.5 w-44" />
               </div>
               <SkTableRows rows={6} cols={6} />

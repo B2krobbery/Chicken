@@ -111,12 +111,12 @@ export default function HomePage() {
       {/* Brand panel */}
       <div className="bg-shell-900 lg:w-[42%] lg:min-h-screen flex flex-col justify-between px-6 sm:px-10 py-8 lg:py-10">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-md bg-gradient-to-tr from-brand-600 to-amber-500 flex items-center justify-center text-lg">
+          <div className="w-8 h-8 rounded-md bg-gradient-to-tr from-brand-600 to-amber-500 flex items-center justify-center text-lg lg:text-2xl">
             🍗
           </div>
           <div>
-            <div className="text-sm font-bold text-slate-50">TheChickenMan</div>
-            <div className="text-[10px] text-slate-400 uppercase tracking-[0.15em]">
+            <div className="text-sm lg:text-base font-bold text-slate-50">TheChickenMan</div>
+            <div className="text-[11px] lg:text-xs text-slate-400 uppercase tracking-[0.15em]">
               B2B Poultry Platform
             </div>
           </div>
@@ -127,12 +127,12 @@ export default function HomePage() {
             Institutional poultry procurement,
             <span className="text-brand-400"> end to end.</span>
           </h1>
-          <p className="text-sm text-slate-400 mt-4 max-w-md leading-relaxed">
+          <p className="text-sm lg:text-base text-slate-400 mt-4 max-w-md leading-relaxed">
             Verified FSSAI/GST suppliers, real-time multi-state inventory
             ledgers, GST-compliant invoicing, and OTP-verified cold-chain
             delivery — one platform.
           </p>
-          <div className="mt-6 grid grid-cols-3 gap-3 max-w-md">
+          <div className="mt-6 grid grid-cols-3 gap-3 lg:gap-4 max-w-md">
             {[
               ["4", "Portal roles"],
               ["5%", "GST invoicing"],
@@ -140,10 +140,10 @@ export default function HomePage() {
             ].map(([v, l]) => (
               <div
                 key={l}
-                className="border border-shell-700 rounded-md px-3 py-2.5"
+                className="border border-shell-700 rounded-md px-3 lg:px-4 py-2.5 lg:py-3"
               >
-                <div className="text-lg font-bold text-slate-100 tnum">{v}</div>
-                <div className="text-[10px] text-slate-500 uppercase tracking-wide">
+                <div className="text-lg lg:text-2xl font-bold text-slate-100 tnum">{v}</div>
+                <div className="text-[11px] lg:text-xs text-slate-500 uppercase tracking-wide">
                   {l}
                 </div>
               </div>
@@ -151,7 +151,7 @@ export default function HomePage() {
           </div>
         </div>
 
-        <div className="text-[10px] text-slate-600 hidden lg:block">
+        <div className="text-[11px] lg:text-xs text-slate-600 hidden lg:block">
           Mocked payments & notifications · Production data via Supabase
         </div>
       </div>
@@ -160,15 +160,15 @@ export default function HomePage() {
       <div className="flex-1 flex items-center justify-center p-5 sm:p-8">
         <div className="w-full max-w-xl space-y-6">
           <div>
-            <h2 className="text-lg font-bold text-slate-900 tracking-tight">
+            <h2 className="text-lg lg:text-2xl font-bold text-slate-900 tracking-tight">
               Access the platform
             </h2>
-            <p className="text-xs text-slate-500 mt-1">
+            <p className="text-xs lg:text-sm text-slate-500 mt-1">
               Pick a demo persona or sign in with workspace credentials.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 lg:gap-4">
             {DEMO_ROLES.map((r) => {
               const Icon = r.icon;
               const busy = signingIn === r.role;
@@ -177,7 +177,7 @@ export default function HomePage() {
                   key={r.role}
                   onClick={() => handleDemo(r)}
                   disabled={signingIn !== null}
-                  className={`p-4 bg-shell-900 border border-shell-700 rounded-lg text-left transition group disabled:opacity-60 ${r.accent}`}
+                  className={`p-4 lg:p-5 bg-shell-900 border border-shell-700 rounded-lg text-left transition group disabled:opacity-60 ${r.accent}`}
                 >
                   <div className="flex items-center justify-between">
                     <div
@@ -189,17 +189,17 @@ export default function HomePage() {
                         <Icon className="w-4 h-4" />
                       )}
                     </div>
-                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                    <span className="text-[11px] lg:text-xs font-bold text-slate-500 uppercase tracking-wider">
                       {busy ? "Signing in…" : "Demo"}
                     </span>
                   </div>
-                  <div className="mt-2.5 font-bold text-slate-100 text-sm">
+                  <div className="mt-2.5 font-bold text-slate-100 text-sm lg:text-base">
                     {r.label}
                   </div>
-                  <div className="text-[11px] text-slate-500 mt-0.5 leading-snug">
+                  <div className="text-[11px] lg:text-xs text-slate-500 mt-0.5 leading-snug">
                     {r.desc}
                   </div>
-                  <div className="text-[10px] text-slate-600 mt-1.5 font-mono truncate">
+                  <div className="text-[11px] lg:text-xs text-slate-600 mt-1.5 font-mono truncate">
                     {r.who}
                   </div>
                 </button>
@@ -208,13 +208,13 @@ export default function HomePage() {
           </div>
 
           {/* Credential form */}
-          <div className="bg-white border border-slate-200 rounded-lg p-5 space-y-3">
-            <div className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+          <div className="bg-white border border-slate-200 rounded-lg p-5 lg:p-6 space-y-3 lg:space-y-4">
+            <div className="text-xs lg:text-sm font-bold text-slate-800 flex items-center gap-1.5">
               <Lock className="w-3.5 h-3.5 text-slate-400" />
               Sign in with credentials
             </div>
             {loginErr && (
-              <div className="px-3 py-2 bg-rose-50 border border-rose-200 text-rose-700 rounded-md text-xs">
+              <div className="px-3 lg:px-4 py-2 bg-rose-50 border border-rose-200 text-rose-700 rounded-md text-xs lg:text-sm">
                 {loginErr}
               </div>
             )}
@@ -222,7 +222,7 @@ export default function HomePage() {
               <div>
                 <label
                   htmlFor="login-email"
-                  className="block text-[11px] font-semibold text-slate-600 mb-1 uppercase tracking-wide"
+                  className="block text-[11px] lg:text-xs font-semibold text-slate-600 mb-1 uppercase tracking-wide"
                 >
                   Email
                 </label>
@@ -232,14 +232,14 @@ export default function HomePage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="admin@thechickenman.com"
-                  className="w-full px-2.5 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/40 focus:border-brand-500"
+                  className="w-full px-2.5 py-2 border border-slate-300 rounded-md text-sm lg:text-base focus:outline-none focus:ring-2 focus:ring-brand-500/40 focus:border-brand-500"
                   required
                 />
               </div>
               <div>
                 <label
                   htmlFor="login-password"
-                  className="block text-[11px] font-semibold text-slate-600 mb-1 uppercase tracking-wide"
+                  className="block text-[11px] lg:text-xs font-semibold text-slate-600 mb-1 uppercase tracking-wide"
                 >
                   Password
                 </label>
@@ -249,14 +249,14 @@ export default function HomePage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full px-2.5 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/40 focus:border-brand-500"
+                  className="w-full px-2.5 py-2 border border-slate-300 rounded-md text-sm lg:text-base focus:outline-none focus:ring-2 focus:ring-brand-500/40 focus:border-brand-500"
                   required
                 />
               </div>
               <button
                 type="submit"
                 disabled={signingIn !== null}
-                className="w-full py-2.5 bg-brand-600 hover:bg-brand-700 disabled:bg-slate-300 text-white text-sm font-bold rounded-md transition flex items-center justify-center gap-2"
+                className="w-full py-2.5 lg:py-3 bg-brand-600 hover:bg-brand-700 disabled:bg-slate-300 text-white text-sm lg:text-base font-bold rounded-md transition flex items-center justify-center gap-2"
               >
                 {signingIn === "custom" && (
                   <Loader2 className="w-4 h-4 animate-spin" />

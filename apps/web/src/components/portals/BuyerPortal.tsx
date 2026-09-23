@@ -213,10 +213,10 @@ export function BuyerPortal() {
 
   const marketplaceBody = loading ? (
     <div className="space-y-4">
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 lg:gap-4">
         <SkKpi /><SkKpi /><SkKpi /><SkKpi />
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-3 lg:gap-4">
         {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
           <SkCard key={i} />
         ))}
@@ -231,20 +231,20 @@ export function BuyerPortal() {
   ) : (
     <div className="space-y-4">
       {/* Filters */}
-      <div className="bg-white border border-slate-200 rounded-md p-2.5 flex flex-wrap items-center gap-2">
+      <div className="bg-white border border-slate-200 rounded-md p-2.5 lg:p-3.5 flex flex-wrap items-center gap-2">
         <div className="relative flex-1 min-w-[180px]">
           <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
           <input
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search broiler, breast, curry cut…"
-            className="w-full pl-8 pr-2 py-1.5 border border-slate-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-brand-500/40 focus:border-brand-500"
+            className="w-full pl-8 pr-2 py-1.5 border border-slate-300 rounded-md text-xs lg:text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/40 focus:border-brand-500"
           />
         </div>
         <select
           value={conditionFilter}
           onChange={(e) => setConditionFilter(e.target.value)}
-          className="px-2 py-1.5 border border-slate-300 rounded-md text-xs bg-white"
+          className="px-2 py-1.5 border border-slate-300 rounded-md text-xs lg:text-sm bg-white"
         >
           <option value="">All conditions</option>
           <option value="Fresh">Fresh</option>
@@ -256,7 +256,7 @@ export function BuyerPortal() {
           value={pincodeFilter}
           onChange={(e) => setPincodeFilter(e.target.value)}
           placeholder="Pincode"
-          className="w-24 px-2 py-1.5 border border-slate-300 rounded-md text-xs tnum"
+          className="w-24 px-2 py-1.5 border border-slate-300 rounded-md text-xs lg:text-sm tnum"
         />
         {(searchQuery || conditionFilter || pincodeFilter) && (
           <button
@@ -265,12 +265,12 @@ export function BuyerPortal() {
               setConditionFilter("");
               setPincodeFilter("");
             }}
-            className="text-xs text-slate-500 hover:text-slate-800 font-medium inline-flex items-center gap-1 px-2 py-1.5"
+            className="text-xs lg:text-sm text-slate-500 hover:text-slate-800 font-medium inline-flex items-center gap-1 px-2 py-1.5"
           >
             <RotateCcw className="w-3 h-3" /> Clear
           </button>
         )}
-        <span className="ml-auto text-[11px] text-slate-400 tnum">
+        <span className="ml-auto text-[11px] lg:text-xs text-slate-400 tnum">
           {listings.length} listing{listings.length === 1 ? "" : "s"}
         </span>
       </div>
@@ -288,7 +288,7 @@ export function BuyerPortal() {
                   setConditionFilter("");
                   setPincodeFilter("");
                 }}
-                className="px-3 py-1.5 bg-slate-900 text-white text-xs font-bold rounded-md hover:bg-slate-800 transition"
+                className="px-3 lg:px-4 py-1.5 bg-slate-900 text-white text-xs lg:text-sm font-bold rounded-md hover:bg-slate-800 transition"
               >
                 Clear filters
               </button>
@@ -296,7 +296,7 @@ export function BuyerPortal() {
           />
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-3 lg:gap-4">
           {listings.map((l) => {
             const qty = qtyDrafts[l.id] ?? l.moq_kg;
             const outOfStock = l.total_available_stock_kg < l.moq_kg;
@@ -305,20 +305,20 @@ export function BuyerPortal() {
                 key={l.id}
                 className="bg-white rounded-md border border-slate-200 hover:border-slate-300 transition flex flex-col"
               >
-                <div className="p-3 flex-1">
+                <div className="p-3 lg:p-4 flex-1">
                   <div className="flex justify-between items-start gap-2">
-                    <span className="text-[10px] font-mono font-bold bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded">
+                    <span className="text-[11px] lg:text-xs font-mono font-bold bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded">
                       {l.sku_code}
                     </span>
                     <StatusBadge status={l.condition} />
                   </div>
-                  <h3 className="text-sm font-bold text-slate-900 mt-2 leading-snug break-words">
+                  <h3 className="text-sm lg:text-base font-bold text-slate-900 mt-2 leading-snug break-words">
                     {l.product_name}
                   </h3>
-                  <p className="text-[11px] text-slate-500 truncate mt-0.5">
+                  <p className="text-[11px] lg:text-xs text-slate-500 truncate mt-0.5">
                     {l.supplier_name}
                   </p>
-                  <div className="mt-2.5 space-y-1 text-[11px]">
+                  <div className="mt-2.5 space-y-1 text-[11px] lg:text-xs">
                     <div className="flex justify-between">
                       <span className="text-slate-500">Base</span>
                       <span className="tnum font-semibold text-slate-900">
@@ -331,13 +331,13 @@ export function BuyerPortal() {
                         ₹{l.landed_price_per_kg.toFixed(2)}/kg
                       </span>
                     </div>
-                    <div className="flex justify-between text-[10px] text-slate-400 pt-1 border-t border-slate-100">
+                    <div className="flex justify-between text-[11px] lg:text-xs text-slate-400 pt-1 border-t border-slate-100">
                       <span>MOQ {l.moq_kg} kg</span>
                       <span>Avail {l.total_available_stock_kg} kg</span>
                     </div>
                   </div>
                 </div>
-                <div className="p-2.5 border-t border-slate-100 flex items-center gap-2">
+                <div className="p-2.5 lg:p-3.5 border-t border-slate-100 flex items-center gap-2">
                   <input
                     type="number"
                     min={l.moq_kg}
@@ -350,13 +350,13 @@ export function BuyerPortal() {
                       }))
                     }
                     aria-label={`Quantity in kg for ${l.product_name}`}
-                    className="w-20 px-2 py-1.5 border border-slate-300 rounded-md text-xs tnum font-bold"
+                    className="w-20 px-2 py-1.5 border border-slate-300 rounded-md text-xs lg:text-sm tnum font-bold"
                   />
-                  <span className="text-[10px] text-slate-400">kg</span>
+                  <span className="text-[11px] lg:text-xs text-slate-400">kg</span>
                   <button
                     onClick={() => handleAddToCart(l, qty)}
                     disabled={outOfStock || cartBusy}
-                    className={`flex-1 py-1.5 px-2 rounded-md text-xs font-bold transition flex items-center justify-center gap-1.5 ${
+                    className={`flex-1 py-1.5 px-2 rounded-md text-xs lg:text-sm font-bold transition flex items-center justify-center gap-1.5 ${
                       outOfStock || cartBusy
                         ? "bg-slate-200 text-slate-400 cursor-not-allowed"
                         : "bg-slate-900 hover:bg-slate-800 text-white"
@@ -378,11 +378,11 @@ export function BuyerPortal() {
     <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 items-start">
       {/* Items */}
       <div className="xl:col-span-2 bg-white border border-slate-200 rounded-md overflow-hidden">
-        <div className="px-3 py-2.5 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
-          <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wide">
+        <div className="px-3 lg:px-4 py-2.5 lg:py-3 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
+          <h3 className="text-xs lg:text-sm font-bold text-slate-800 uppercase tracking-wide">
             Cart line items
           </h3>
-          <span className="text-[11px] text-slate-400 tnum">
+          <span className="text-[11px] lg:text-xs text-slate-400 tnum">
             {cart?.items?.length || 0} item{cart?.items?.length === 1 ? "" : "s"}
           </span>
         </div>
@@ -396,7 +396,7 @@ export function BuyerPortal() {
             action={
               <button
                 onClick={() => setView("marketplace")}
-                className="px-3 py-1.5 bg-slate-900 text-white text-xs font-bold rounded-md hover:bg-slate-800 transition"
+                className="px-3 lg:px-4 py-1.5 bg-slate-900 text-white text-xs lg:text-sm font-bold rounded-md hover:bg-slate-800 transition"
               >
                 Browse marketplace
               </button>
@@ -404,51 +404,51 @@ export function BuyerPortal() {
           />
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
+            <table className="w-full text-left text-xs lg:text-sm">
               <thead>
-                <tr className="border-b border-slate-200 bg-slate-50/60 text-slate-500 uppercase text-[10px] font-bold tracking-wide">
-                  <th className="px-3 py-2">Product</th>
-                  <th className="px-3 py-2">Location</th>
-                  <th className="px-3 py-2 text-right">Qty (kg)</th>
-                  <th className="px-3 py-2 text-right">₹/kg</th>
-                  <th className="px-3 py-2 text-right">Total</th>
-                  <th className="px-3 py-2 text-right"></th>
+                <tr className="border-b border-slate-200 bg-slate-50/60 text-slate-500 uppercase text-[11px] lg:text-xs font-bold tracking-wide">
+                  <th className="px-3 lg:px-4 py-2">Product</th>
+                  <th className="px-3 lg:px-4 py-2">Location</th>
+                  <th className="px-3 lg:px-4 py-2 text-right">Qty (kg)</th>
+                  <th className="px-3 lg:px-4 py-2 text-right">₹/kg</th>
+                  <th className="px-3 lg:px-4 py-2 text-right">Total</th>
+                  <th className="px-3 lg:px-4 py-2 text-right"></th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {cart.items.map((item: any) => (
                   <tr key={item.id} className="hover:bg-slate-50/50">
-                    <td className="px-3 py-2.5">
+                    <td className="px-3 lg:px-4 py-2.5 lg:py-3">
                       <div className="font-bold text-slate-900 break-words max-w-[220px]">
                         {item.product_name}
                       </div>
-                      <div className="text-[10px] text-slate-400 font-mono">
+                      <div className="text-[11px] lg:text-xs text-slate-400 font-mono">
                         {item.sku_code} · {item.supplier_name}
                       </div>
                       {!item.moq_met && (
-                        <div className="text-[10px] text-rose-600 font-semibold mt-0.5">
+                        <div className="text-[11px] lg:text-xs text-rose-600 font-semibold mt-0.5">
                           Below MOQ ({item.moq_kg} kg)
                         </div>
                       )}
                       {!item.stock_sufficient && (
-                        <div className="text-[10px] text-rose-600 font-semibold">
+                        <div className="text-[11px] lg:text-xs text-rose-600 font-semibold">
                           Only {item.available_stock_kg} kg available
                         </div>
                       )}
                     </td>
-                    <td className="px-3 py-2.5 text-slate-600 max-w-[140px] truncate">
+                    <td className="px-3 lg:px-4 py-2.5 lg:py-3 text-slate-600 max-w-[140px] truncate">
                       {item.location_name}
                     </td>
-                    <td className="px-3 py-2.5 text-right tnum font-bold">
+                    <td className="px-3 lg:px-4 py-2.5 lg:py-3 text-right tnum font-bold">
                       {item.quantity_kg}
                     </td>
-                    <td className="px-3 py-2.5 text-right tnum text-slate-600">
+                    <td className="px-3 lg:px-4 py-2.5 lg:py-3 text-right tnum text-slate-600">
                       {item.unit_price_per_kg.toFixed(2)}
                     </td>
-                    <td className="px-3 py-2.5 text-right tnum font-bold text-slate-900">
+                    <td className="px-3 lg:px-4 py-2.5 lg:py-3 text-right tnum font-bold text-slate-900">
                       ₹{item.item_total.toFixed(2)}
                     </td>
-                    <td className="px-3 py-2.5 text-right">
+                    <td className="px-3 lg:px-4 py-2.5 lg:py-3 text-right">
                       <button
                         onClick={() => handleRemoveItem(item.id)}
                         disabled={cartBusy}
@@ -468,19 +468,19 @@ export function BuyerPortal() {
 
       {/* Summary */}
       <div className="bg-white border border-slate-200 rounded-md overflow-hidden xl:sticky xl:top-16">
-        <div className="px-3 py-2.5 bg-slate-50 border-b border-slate-200">
-          <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wide">
+        <div className="px-3 lg:px-4 py-2.5 lg:py-3 bg-slate-50 border-b border-slate-200">
+          <h3 className="text-xs lg:text-sm font-bold text-slate-800 uppercase tracking-wide">
             Order summary
           </h3>
         </div>
-        <div className="p-3 space-y-2 text-xs">
-          <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wide">
+        <div className="p-3 lg:p-4 space-y-2 text-xs lg:text-sm">
+          <label className="block text-[11px] lg:text-xs font-bold text-slate-500 uppercase tracking-wide">
             Delivery address
           </label>
           <select
             value={selectedLocationId}
             onChange={(e) => setSelectedLocationId(e.target.value)}
-            className="w-full px-2 py-1.5 border border-slate-300 rounded-md text-xs"
+            className="w-full px-2 py-1.5 border border-slate-300 rounded-md text-xs lg:text-sm"
           >
             {locations.map((loc) => (
               <option key={loc.id} value={loc.id}>
@@ -503,7 +503,7 @@ export function BuyerPortal() {
                   <span>Cold-chain delivery</span>
                   <span className="tnum">₹{cart.delivery_fee.toFixed(2)}</span>
                 </div>
-                <div className="flex justify-between font-bold text-sm text-slate-900 pt-2 border-t border-slate-200">
+                <div className="flex justify-between font-bold text-sm lg:text-base text-slate-900 pt-2 border-t border-slate-200">
                   <span>Grand total</span>
                   <span className="tnum text-emerald-700">
                     ₹{cart.grand_total.toFixed(2)}
@@ -515,7 +515,7 @@ export function BuyerPortal() {
                   {cart.validation_messages.map((m: string, i: number) => (
                     <div
                       key={i}
-                      className="text-[10px] text-amber-700 bg-amber-50 border border-amber-200 rounded px-2 py-1"
+                      className="text-[11px] lg:text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded px-2 py-1.5"
                     >
                       {m}
                     </div>
@@ -525,7 +525,7 @@ export function BuyerPortal() {
               <button
                 onClick={handleCheckout}
                 disabled={cartBusy || !cart.is_valid_for_checkout}
-                className={`w-full mt-2 py-2.5 rounded-md text-xs font-bold transition flex items-center justify-center gap-2 ${
+                className={`w-full mt-2 py-2.5 lg:py-3 rounded-md text-xs lg:text-sm font-bold transition flex items-center justify-center gap-2 ${
                   !cartBusy && cart.is_valid_for_checkout
                     ? "bg-brand-600 hover:bg-brand-700 text-white"
                     : "bg-slate-200 text-slate-400 cursor-not-allowed"
@@ -543,15 +543,15 @@ export function BuyerPortal() {
 
   const ordersTable = (
     <div className="overflow-x-auto">
-      <table className="w-full text-left text-xs">
+      <table className="w-full text-left text-xs lg:text-sm">
         <thead>
-          <tr className="border-b border-slate-200 bg-slate-50/60 text-slate-500 uppercase text-[10px] font-bold tracking-wide">
-            <th className="px-3 py-2 whitespace-nowrap">Order #</th>
-            <th className="px-3 py-2 hidden md:table-cell">Supplier</th>
-            <th className="px-3 py-2 text-right whitespace-nowrap">Total</th>
-            <th className="px-3 py-2 whitespace-nowrap">Status</th>
-            <th className="px-3 py-2 whitespace-nowrap hidden md:table-cell">Placed</th>
-            <th className="px-3 py-2 text-right whitespace-nowrap">Actions</th>
+          <tr className="border-b border-slate-200 bg-slate-50/60 text-slate-500 uppercase text-[11px] lg:text-xs font-bold tracking-wide">
+            <th className="px-3 lg:px-4 py-2 whitespace-nowrap">Order #</th>
+            <th className="px-3 lg:px-4 py-2 hidden md:table-cell">Supplier</th>
+            <th className="px-3 lg:px-4 py-2 text-right whitespace-nowrap">Total</th>
+            <th className="px-3 lg:px-4 py-2 whitespace-nowrap">Status</th>
+            <th className="px-3 lg:px-4 py-2 whitespace-nowrap hidden md:table-cell">Placed</th>
+            <th className="px-3 lg:px-4 py-2 text-right whitespace-nowrap">Actions</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-slate-100">
@@ -565,7 +565,7 @@ export function BuyerPortal() {
                   }
                   className="hover:bg-slate-50/70 cursor-pointer select-none"
                 >
-                  <td className="px-3 py-2.5 tnum font-bold text-slate-900 whitespace-nowrap">
+                  <td className="px-3 lg:px-4 py-2.5 lg:py-3 tnum font-bold text-slate-900 whitespace-nowrap">
                     <span className="inline-flex items-center gap-1.5">
                       {isExpanded ? (
                         <ChevronUp className="w-3.5 h-3.5 text-brand-600" />
@@ -575,16 +575,16 @@ export function BuyerPortal() {
                       {o.order_number}
                     </span>
                   </td>
-                  <td className="px-3 py-2.5 text-slate-700 max-w-[180px] truncate hidden md:table-cell">
+                  <td className="px-3 lg:px-4 py-2.5 lg:py-3 text-slate-700 max-w-[180px] truncate hidden md:table-cell">
                     {o.supplier_name}
                   </td>
-                  <td className="px-3 py-2.5 text-right tnum font-bold whitespace-nowrap">
+                  <td className="px-3 lg:px-4 py-2.5 lg:py-3 text-right tnum font-bold whitespace-nowrap">
                     ₹{o.total_amount?.toLocaleString("en-IN")}
                   </td>
-                  <td className="px-3 py-2.5 whitespace-nowrap">
+                  <td className="px-3 lg:px-4 py-2.5 lg:py-3 whitespace-nowrap">
                     <StatusBadge status={o.status} pulse={["PENDING","CONFIRMED","PROCESSING","DISPATCHED"].includes(o.status)} />
                   </td>
-                  <td className="px-3 py-2.5 text-slate-500 whitespace-nowrap hidden md:table-cell">
+                  <td className="px-3 lg:px-4 py-2.5 lg:py-3 text-slate-500 whitespace-nowrap hidden md:table-cell">
                     {new Date(o.created_at).toLocaleDateString("en-IN", {
                       day: "2-digit",
                       month: "short",
@@ -593,26 +593,26 @@ export function BuyerPortal() {
                     })}
                   </td>
                   <td
-                    className="px-3 py-2.5 text-right space-x-1.5 whitespace-nowrap"
+                    className="px-3 lg:px-4 py-2.5 lg:py-3 text-right space-x-1.5 whitespace-nowrap"
                     onClick={(e) => e.stopPropagation()}
                   >
                     {o.status === "PENDING" && o.payment_status !== "SUCCESS" && (
                       <button
                         onClick={() => setPaymentModalOrder(o)}
-                        className="bg-brand-600 hover:bg-brand-700 text-white font-bold px-2.5 py-1 rounded-md text-[11px]"
+                        className="bg-brand-600 hover:bg-brand-700 text-white font-bold px-2.5 py-1.5 rounded-md text-[11px] lg:text-xs"
                       >
                         Pay now
                       </button>
                     )}
                     {o.payment_status === "SUCCESS" && o.status === "PENDING" && (
-                      <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-emerald-50 border border-emerald-200 text-emerald-700 text-[10px] font-bold uppercase tracking-wide">
+                      <span className="inline-flex items-center gap-1 px-2 py-1.5 rounded-md bg-emerald-50 border border-emerald-200 text-emerald-700 text-[11px] lg:text-xs font-bold uppercase tracking-wide">
                         Paid
                       </span>
                     )}
                     {!["PENDING", "CANCELLED", "REJECTED"].includes(o.status) && (
                       <button
                         onClick={() => handleViewInvoice(o)}
-                        className="bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium px-2.5 py-1 rounded-md text-[11px] inline-flex items-center gap-1"
+                        className="bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium px-2.5 py-1.5 rounded-md text-[11px] lg:text-xs inline-flex items-center gap-1"
                       >
                         <FileText className="w-3 h-3 text-emerald-600" />
                         Invoice
@@ -622,7 +622,7 @@ export function BuyerPortal() {
                 </tr>
                 {isExpanded && (
                   <tr className="bg-slate-50/60">
-                    <td colSpan={6} className="px-3 py-3">
+                    <td colSpan={6} className="px-3 lg:px-4 py-3">
                       <OrderTimelineTracker
                         status={o.status}
                         driverName={o.driver_name}
@@ -641,11 +641,11 @@ export function BuyerPortal() {
 
   const ordersBody = (
     <div className="bg-white border border-slate-200 rounded-md overflow-hidden">
-      <div className="px-3 py-2.5 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
-        <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wide">
+      <div className="px-3 lg:px-4 py-2.5 lg:py-3 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
+        <h3 className="text-xs lg:text-sm font-bold text-slate-800 uppercase tracking-wide">
           Order history & tracking
         </h3>
-        <span className="text-[11px] text-slate-400 hidden sm:inline">
+        <span className="text-[11px] lg:text-xs text-slate-400 hidden sm:inline">
           Click a row for the fulfillment timeline
         </span>
       </div>
@@ -657,7 +657,7 @@ export function BuyerPortal() {
           action={
             <button
               onClick={() => setView("marketplace")}
-              className="px-3 py-1.5 bg-slate-900 text-white text-xs font-bold rounded-md hover:bg-slate-800 transition"
+              className="px-3 lg:px-4 py-1.5 bg-slate-900 text-white text-xs lg:text-sm font-bold rounded-md hover:bg-slate-800 transition"
             >
               Browse marketplace
             </button>
@@ -671,8 +671,8 @@ export function BuyerPortal() {
 
   const invoicesBody = (
     <div className="bg-white border border-slate-200 rounded-md overflow-hidden">
-      <div className="px-3 py-2.5 bg-slate-50 border-b border-slate-200">
-        <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wide">
+      <div className="px-3 lg:px-4 py-2.5 lg:py-3 bg-slate-50 border-b border-slate-200">
+        <h3 className="text-xs lg:text-sm font-bold text-slate-800 uppercase tracking-wide">
           GST tax invoices
         </h3>
       </div>
@@ -684,14 +684,14 @@ export function BuyerPortal() {
         />
       ) : (
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
+          <table className="w-full text-left text-xs lg:text-sm">
             <thead>
-              <tr className="border-b border-slate-200 bg-slate-50/60 text-slate-500 uppercase text-[10px] font-bold tracking-wide">
-                <th className="px-3 py-2">Order #</th>
-                <th className="px-3 py-2 hidden md:table-cell">Supplier</th>
-                <th className="px-3 py-2 text-right">Amount</th>
-                <th className="px-3 py-2">Status</th>
-                <th className="px-3 py-2 text-right">Invoice</th>
+              <tr className="border-b border-slate-200 bg-slate-50/60 text-slate-500 uppercase text-[11px] lg:text-xs font-bold tracking-wide">
+                <th className="px-3 lg:px-4 py-2">Order #</th>
+                <th className="px-3 lg:px-4 py-2 hidden md:table-cell">Supplier</th>
+                <th className="px-3 lg:px-4 py-2 text-right">Amount</th>
+                <th className="px-3 lg:px-4 py-2">Status</th>
+                <th className="px-3 lg:px-4 py-2 text-right">Invoice</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -699,20 +699,20 @@ export function BuyerPortal() {
                 .filter((o) => !["PENDING", "CANCELLED", "REJECTED"].includes(o.status))
                 .map((o) => (
                   <tr key={o.id} className="hover:bg-slate-50/50">
-                    <td className="px-3 py-2.5 tnum font-bold">{o.order_number}</td>
-                    <td className="px-3 py-2.5 text-slate-700 max-w-[200px] truncate hidden md:table-cell">
+                    <td className="px-3 lg:px-4 py-2.5 lg:py-3 tnum font-bold">{o.order_number}</td>
+                    <td className="px-3 lg:px-4 py-2.5 lg:py-3 text-slate-700 max-w-[200px] truncate hidden md:table-cell">
                       {o.supplier_name}
                     </td>
-                    <td className="px-3 py-2.5 text-right tnum font-bold">
+                    <td className="px-3 lg:px-4 py-2.5 lg:py-3 text-right tnum font-bold">
                       ₹{o.total_amount?.toLocaleString("en-IN")}
                     </td>
-                    <td className="px-3 py-2.5">
+                    <td className="px-3 lg:px-4 py-2.5 lg:py-3">
                       <StatusBadge status={o.status} />
                     </td>
-                    <td className="px-3 py-2.5 text-right">
+                    <td className="px-3 lg:px-4 py-2.5 lg:py-3 text-right">
                       <button
                         onClick={() => handleViewInvoice(o)}
-                        className="bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium px-2.5 py-1 rounded-md text-[11px] inline-flex items-center gap-1"
+                        className="bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium px-2.5 py-1.5 rounded-md text-[11px] lg:text-xs inline-flex items-center gap-1"
                       >
                         <FileText className="w-3 h-3 text-emerald-600" /> View
                       </button>
@@ -743,7 +743,7 @@ export function BuyerPortal() {
       ]}
       subtitle={profile?.business_name}
     >
-      <div className="space-y-4 max-w-[1600px] mx-auto">
+      <div className="space-y-4 lg:space-y-6 max-w-[1600px] 2xl:max-w-[1760px] mx-auto">
         {msg && <Banner message={msg} onDismiss={() => setMsg(null)} />}
         {error && (
           <Banner message={error} onDismiss={() => setError(null)} tone="error" />
@@ -753,7 +753,7 @@ export function BuyerPortal() {
         {view !== "marketplace" &&
           (loading ? (
             <div className="bg-white border border-slate-200 rounded-md overflow-hidden">
-              <div className="px-3 py-2.5 bg-slate-50 border-b border-slate-200">
+              <div className="px-3 lg:px-4 py-2.5 lg:py-3 bg-slate-50 border-b border-slate-200">
                 <Sk className="h-3.5 w-44" />
               </div>
               <SkTableRows rows={5} cols={5} />
@@ -770,9 +770,9 @@ export function BuyerPortal() {
       {/* Payment modal */}
       {paymentModalOrder && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg max-w-md w-full p-5 space-y-4 shadow-xl text-xs">
+          <div className="bg-white rounded-lg max-w-md w-full p-5 space-y-4 shadow-xl text-xs lg:text-sm">
             <div className="flex justify-between items-center border-b border-slate-200 pb-3">
-              <h3 className="font-bold text-slate-900 text-sm flex items-center gap-2">
+              <h3 className="font-bold text-slate-900 text-sm lg:text-base flex items-center gap-2">
                 <CreditCard className="w-4 h-4 text-brand-600" />
                 Payment & invoicing
               </h3>
@@ -784,18 +784,18 @@ export function BuyerPortal() {
                 <X className="w-4 h-4" />
               </button>
             </div>
-            <div className="p-3 bg-slate-50 rounded-md space-y-1.5">
+            <div className="p-3 lg:p-4 bg-slate-50 rounded-md space-y-1.5">
               <div className="flex justify-between">
                 <span className="text-slate-500">Order</span>
                 <span className="tnum font-bold">{paymentModalOrder.order_number}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-slate-500">Amount due</span>
-                <span className="tnum font-bold text-emerald-700 text-sm">
+                <span className="tnum font-bold text-emerald-700 text-sm lg:text-base">
                   ₹{paymentModalOrder.total_amount?.toLocaleString("en-IN")}
                 </span>
               </div>
-              <p className="text-[10px] text-slate-400 pt-1">
+              <p className="text-[11px] lg:text-xs text-slate-400 pt-1">
                 Stock is reserved for 30 minutes. Verifying payment issues the
                 GST invoice immediately. (Mock payment provider)
               </p>
@@ -803,7 +803,7 @@ export function BuyerPortal() {
             <button
               onClick={handleProcessPayment}
               disabled={paying}
-              className="w-full py-2.5 bg-brand-600 hover:bg-brand-700 disabled:bg-slate-300 text-white font-bold rounded-md transition flex items-center justify-center gap-2 text-xs"
+              className="w-full py-2.5 lg:py-3 bg-brand-600 hover:bg-brand-700 disabled:bg-slate-300 text-white font-bold rounded-md transition flex items-center justify-center gap-2 text-xs lg:text-sm"
             >
               {paying && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
               {paying ? "Verifying payment…" : "Simulate Payment & Verify"}

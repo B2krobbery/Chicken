@@ -40,7 +40,7 @@ export function StatusBadge({
     STATUS_STYLES[status] || "text-slate-700 bg-slate-100 border-slate-300";
   return (
     <span
-      className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full border text-[11px] font-bold uppercase tracking-wide whitespace-nowrap ${styles} ${className}`}
+      className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full border text-[11px] lg:text-xs font-bold uppercase tracking-wide whitespace-nowrap ${styles} ${className}`}
     >
       {pulse && (
         <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
@@ -72,9 +72,9 @@ export function EmptyState({
       <div className="w-10 h-10 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center mb-3">
         <Icon className="w-5 h-5 text-slate-400" />
       </div>
-      <div className="text-sm font-bold text-slate-800">{title}</div>
+      <div className="text-sm lg:text-base font-bold text-slate-800">{title}</div>
       {description && (
-        <p className="text-xs text-slate-500 mt-1 max-w-sm">{description}</p>
+        <p className="text-xs lg:text-sm text-slate-500 mt-1 max-w-sm">{description}</p>
       )}
       {action && <div className="mt-4">{action}</div>}
     </div>
@@ -98,7 +98,7 @@ export function ErrorState({
 }) {
   if (compact) {
     return (
-      <div className="flex items-center justify-between gap-3 px-3 py-2.5 bg-rose-50 border border-rose-200 rounded-md text-xs">
+      <div className="flex items-center justify-between gap-3 lg:gap-4 px-3 lg:px-4 py-2.5 lg:py-3 bg-rose-50 border border-rose-200 rounded-md text-xs lg:text-sm">
         <span className="flex items-center gap-2 text-rose-800">
           <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
           {title}
@@ -119,12 +119,12 @@ export function ErrorState({
       <div className="w-10 h-10 rounded-lg bg-rose-50 border border-rose-200 flex items-center justify-center mb-3">
         <WifiOff className="w-5 h-5 text-rose-500" />
       </div>
-      <div className="text-sm font-bold text-slate-900">{title}</div>
-      <p className="text-xs text-slate-500 mt-1 max-w-sm">{description}</p>
+      <div className="text-sm lg:text-base font-bold text-slate-900">{title}</div>
+      <p className="text-xs lg:text-sm text-slate-500 mt-1 max-w-sm">{description}</p>
       {onRetry && (
         <button
           onClick={onRetry}
-          className="mt-4 inline-flex items-center gap-1.5 px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-md transition"
+          className="mt-4 inline-flex items-center gap-1.5 px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs lg:text-sm font-bold rounded-md transition"
         >
           <RefreshCw className="w-3.5 h-3.5" /> {retryLabel}
         </button>
@@ -151,7 +151,7 @@ export function Banner({
   };
   return (
     <div
-      className={`flex items-center justify-between gap-3 px-3 py-2.5 border rounded-md text-xs font-medium ${tones[tone]}`}
+      className={`flex items-center justify-between gap-3 lg:gap-4 px-3 lg:px-4 py-2.5 lg:py-3 border rounded-md text-xs lg:text-sm font-medium ${tones[tone]}`}
       role="status"
     >
       <span>{message}</span>

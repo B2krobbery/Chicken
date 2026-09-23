@@ -115,7 +115,7 @@ export function DriverPortal() {
         {error && <Banner message={error} onDismiss={() => setError(null)} tone="error" />}
 
         {loading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-4">
             <SkCard /><SkCard /><SkCard />
           </div>
         ) : error && deliveries.length === 0 ? (
@@ -135,7 +135,7 @@ export function DriverPortal() {
               action={
                 <button
                   onClick={loadData}
-                  className="px-3 py-1.5 bg-slate-900 text-white text-xs font-bold rounded-md hover:bg-slate-800 transition"
+                  className="px-3 lg:px-4 py-1.5 bg-slate-900 text-white text-xs lg:text-sm font-bold rounded-md hover:bg-slate-800 transition"
                 >
                   Check again
                 </button>
@@ -145,7 +145,7 @@ export function DriverPortal() {
         ) : (
           <>
             {/* KPI strip */}
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-3 gap-3 lg:gap-4">
               {[
                 ["Assigned", deliveries.length],
                 ["In progress", active.length],
@@ -153,9 +153,9 @@ export function DriverPortal() {
               ].map(([l, v]) => (
                 <div
                   key={l}
-                  className="bg-white border border-slate-200 rounded-md p-3"
+                  className="bg-white border border-slate-200 rounded-md p-3 lg:p-4"
                 >
-                  <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">
+                  <div className="text-[11px] lg:text-xs font-bold text-slate-500 uppercase tracking-wide">
                     {l}
                   </div>
                   <div className="text-xl font-bold text-slate-900 tnum">{v}</div>
@@ -163,7 +163,7 @@ export function DriverPortal() {
               ))}
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-4">
               {deliveries.map((d) => (
                 <div
                   key={d.delivery_id}
@@ -171,19 +171,19 @@ export function DriverPortal() {
                 >
                   <div className="flex justify-between items-start gap-2">
                     <div className="min-w-0">
-                      <span className="tnum font-bold text-sm text-slate-900">
+                      <span className="tnum font-bold text-sm lg:text-base text-slate-900">
                         {d.order_number}
                       </span>
-                      <div className="text-[11px] text-slate-500">
+                      <div className="text-[11px] lg:text-xs text-slate-500">
                         Vehicle: {d.vehicle_number || "Cold-Van 01"}
                       </div>
                     </div>
                     <StatusBadge status={d.status} />
                   </div>
 
-                  <div className="space-y-2 text-xs">
-                    <div className="p-2.5 bg-amber-50/60 rounded-md border border-amber-100">
-                      <div className="font-bold text-slate-700 flex items-center gap-1.5 mb-0.5 text-[10px] uppercase tracking-wide">
+                  <div className="space-y-2 text-xs lg:text-sm">
+                    <div className="p-2.5 lg:p-3.5 bg-amber-50/60 rounded-md border border-amber-100">
+                      <div className="font-bold text-slate-700 flex items-center gap-1.5 mb-0.5 text-[11px] lg:text-xs uppercase tracking-wide">
                         <MapPin className="w-3.5 h-3.5 text-amber-600 shrink-0" />
                         Pickup — supplier plant
                       </div>
@@ -191,8 +191,8 @@ export function DriverPortal() {
                         {d.pickup_address}
                       </div>
                     </div>
-                    <div className="p-2.5 bg-emerald-50/60 rounded-md border border-emerald-100">
-                      <div className="font-bold text-slate-700 flex items-center gap-1.5 mb-0.5 text-[10px] uppercase tracking-wide">
+                    <div className="p-2.5 lg:p-3.5 bg-emerald-50/60 rounded-md border border-emerald-100">
+                      <div className="font-bold text-slate-700 flex items-center gap-1.5 mb-0.5 text-[11px] lg:text-xs uppercase tracking-wide">
                         <MapPin className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
                         Drop-off — buyer kitchen
                       </div>
@@ -205,7 +205,7 @@ export function DriverPortal() {
                     </div>
                   </div>
 
-                  <div className="flex justify-between items-center text-xs px-2.5 py-2 bg-slate-50 rounded-md border border-slate-100">
+                  <div className="flex justify-between items-center text-xs lg:text-sm px-2.5 py-2 bg-slate-50 rounded-md border border-slate-100">
                     <span className="text-slate-600 font-medium flex items-center gap-1">
                       <Scale className="w-3.5 h-3.5 text-slate-500" /> Net weight
                     </span>
@@ -217,13 +217,13 @@ export function DriverPortal() {
                   {d.status !== "DELIVERED" ? (
                     <button
                       onClick={() => handleOpenPOD(d)}
-                      className="w-full py-2.5 bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs rounded-md transition flex items-center justify-center gap-1.5 min-h-[44px]"
+                      className="w-full py-2.5 lg:py-3 bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs lg:text-sm rounded-md transition flex items-center justify-center gap-1.5 min-h-[44px]"
                     >
                       <FileSignature className="w-4 h-4" />
                       Capture proof of delivery
                     </button>
                   ) : (
-                    <div className="text-center py-2.5 text-xs font-bold text-emerald-700 bg-emerald-50 rounded-md border border-emerald-200 flex items-center justify-center gap-1.5">
+                    <div className="text-center py-2.5 lg:py-3 text-xs lg:text-sm font-bold text-emerald-700 bg-emerald-50 rounded-md border border-emerald-200 flex items-center justify-center gap-1.5">
                       <CheckCircle2 className="w-4 h-4" /> Delivered — handover complete
                     </div>
                   )}
@@ -237,9 +237,9 @@ export function DriverPortal() {
       {/* POD modal */}
       {selectedDelivery && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg max-w-md w-full p-5 space-y-4 shadow-xl text-xs max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-lg max-w-md w-full p-5 space-y-4 shadow-xl text-xs lg:text-sm max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center border-b border-slate-200 pb-3">
-              <h3 className="font-bold text-slate-900 text-sm flex items-center gap-2">
+              <h3 className="font-bold text-slate-900 text-sm lg:text-base flex items-center gap-2">
                 <FileSignature className="w-4 h-4 text-sky-600" />
                 Proof of delivery — {selectedDelivery.order_number}
               </h3>
@@ -254,7 +254,7 @@ export function DriverPortal() {
 
             <form onSubmit={handleCompletePOD} className="space-y-3">
               <div>
-                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-1">
+                <label className="block text-[11px] lg:text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">
                   Buyer verification OTP
                 </label>
                 <input
@@ -262,25 +262,25 @@ export function DriverPortal() {
                   inputMode="numeric"
                   value={otpCode}
                   onChange={(e) => setOtpCode(e.target.value)}
-                  className="w-full px-3 py-3 border border-slate-300 rounded-md tnum font-bold tracking-[0.4em] text-center text-base min-h-[44px]"
+                  className="w-full px-3 lg:px-4 py-3 border border-slate-300 rounded-md tnum font-bold tracking-[0.4em] text-center text-base min-h-[44px]"
                   required
                 />
               </div>
               <div>
-                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-1">
+                <label className="block text-[11px] lg:text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">
                   Authorized recipient
                 </label>
                 <input
                   type="text"
                   value={recipientName}
                   onChange={(e) => setRecipientName(e.target.value)}
-                  className="w-full px-2.5 py-2.5 border border-slate-300 rounded-md min-h-[44px]"
+                  className="w-full px-2.5 py-2.5 lg:py-3 border border-slate-300 rounded-md min-h-[44px]"
                   required
                 />
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-3 lg:gap-4">
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-1">
+                  <label className="block text-[11px] lg:text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">
                     Accepted (kg)
                   </label>
                   <input
@@ -288,12 +288,12 @@ export function DriverPortal() {
                     step="0.01"
                     value={acceptedWeight}
                     onChange={(e) => setAcceptedWeight(Number(e.target.value))}
-                    className="w-full px-2.5 py-2.5 border border-slate-300 rounded-md tnum font-bold min-h-[44px]"
+                    className="w-full px-2.5 py-2.5 lg:py-3 border border-slate-300 rounded-md tnum font-bold min-h-[44px]"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-1">
+                  <label className="block text-[11px] lg:text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">
                     Rejected (kg)
                   </label>
                   <input
@@ -301,13 +301,13 @@ export function DriverPortal() {
                     step="0.01"
                     value={rejectedWeight}
                     onChange={(e) => setRejectedWeight(Number(e.target.value))}
-                    className="w-full px-2.5 py-2.5 border border-slate-300 rounded-md tnum font-bold text-rose-600 min-h-[44px]"
+                    className="w-full px-2.5 py-2.5 lg:py-3 border border-slate-300 rounded-md tnum font-bold text-rose-600 min-h-[44px]"
                   />
                 </div>
               </div>
               {rejectedWeight > 0 && (
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-1">
+                  <label className="block text-[11px] lg:text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">
                     Rejection reason
                   </label>
                   <input
@@ -315,12 +315,12 @@ export function DriverPortal() {
                     value={rejectionReason}
                     onChange={(e) => setRejectionReason(e.target.value)}
                     placeholder="e.g., temperature spike, torn crate"
-                    className="w-full px-2.5 py-2.5 border border-slate-300 rounded-md"
+                    className="w-full px-2.5 py-2.5 lg:py-3 border border-slate-300 rounded-md"
                     required
                   />
                 </div>
               )}
-              <div className="p-2.5 bg-slate-50 border border-slate-100 rounded-md text-[10px] text-slate-500">
+              <div className="p-2.5 lg:p-3.5 bg-slate-50 border border-slate-100 rounded-md text-[11px] lg:text-xs text-slate-500">
                 Submitting records an immutable audit entry and completes the
                 order lifecycle.
               </div>
@@ -328,14 +328,14 @@ export function DriverPortal() {
                 <button
                   type="button"
                   onClick={() => setSelectedDelivery(null)}
-                  className="px-3 py-2.5 border border-slate-300 rounded-md text-slate-600 hover:bg-slate-50 min-h-[44px]"
+                  className="px-3 lg:px-4 py-2.5 lg:py-3 border border-slate-300 rounded-md text-slate-600 hover:bg-slate-50 min-h-[44px]"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="px-4 py-2.5 bg-sky-600 hover:bg-sky-700 disabled:bg-slate-300 text-white font-bold rounded-md flex items-center gap-1.5 min-h-[44px]"
+                  className="px-4 py-2.5 lg:py-3 bg-sky-600 hover:bg-sky-700 disabled:bg-slate-300 text-white font-bold rounded-md flex items-center gap-1.5 min-h-[44px]"
                 >
                   {submitting && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
                   Complete delivery

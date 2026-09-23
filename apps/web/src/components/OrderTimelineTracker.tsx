@@ -49,7 +49,7 @@ export function OrderTimelineTracker({
 
   if (isCancelled) {
     return (
-      <div className="flex items-center gap-2 p-3 bg-rose-50 border border-rose-200 rounded-lg text-rose-800 text-xs">
+      <div className="flex items-center gap-2 p-3 bg-rose-50 border border-rose-200 rounded-lg text-rose-800 text-xs lg:text-sm">
         <XCircle className="w-4 h-4 text-rose-600 shrink-0" />
         <span className="font-bold">Order {status}</span>
         <span className="text-slate-500">— Stock reservation released.</span>
@@ -73,13 +73,13 @@ export function OrderTimelineTracker({
     return (
       <div className="flex items-center gap-1.5">
         <span
-          className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full border text-[11px] font-bold uppercase tracking-wide ${c}`}
+          className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full border text-[11px] lg:text-xs font-bold uppercase tracking-wide ${c}`}
         >
           <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
           {status}
         </span>
         {driverName && status === "DISPATCHED" && (
-          <span className="text-[10px] text-sky-700 bg-sky-50 px-2 py-0.5 rounded border border-sky-200 font-mono">
+          <span className="text-[11px] lg:text-xs text-sky-700 bg-sky-50 px-2 py-0.5 rounded border border-sky-200 font-mono">
             {driverName} · {vehicleNumber || "Cold-Van"}
           </span>
         )}
@@ -124,13 +124,13 @@ export function OrderTimelineTracker({
               </div>
               <div className="mt-1.5">
                 <div
-                  className={`text-[11px] font-bold ${
+                  className={`text-[11px] lg:text-xs font-bold ${
                     isDone || isCurrent ? "text-slate-900" : "text-slate-400"
                   }`}
                 >
                   {step.label}
                 </div>
-                <div className="text-[9px] text-slate-500 hidden sm:block">
+                <div className="text-[10px] lg:text-xs text-slate-500 hidden sm:block">
                   {step.desc}
                 </div>
               </div>
@@ -141,14 +141,14 @@ export function OrderTimelineTracker({
 
       {/* Driver info card when Dispatched or Delivered */}
       {driverName && (status === "DISPATCHED" || status === "DELIVERED") && (
-        <div className="mt-2 p-2.5 bg-sky-50 border border-sky-200 rounded-md flex items-center justify-between text-xs text-sky-900">
+        <div className="mt-2 p-2.5 bg-sky-50 border border-sky-200 rounded-md flex items-center justify-between text-xs lg:text-sm text-sky-900">
           <div className="flex items-center gap-2">
             <Truck className="w-4 h-4 text-sky-600 shrink-0" />
             <span>
               <strong>Driver:</strong> {driverName} &nbsp;·&nbsp; <strong>Vehicle:</strong> {vehicleNumber || "Cold-Van"}
             </span>
           </div>
-          <span className="text-[10px] bg-sky-100 text-sky-800 px-2 py-0.5 rounded font-bold uppercase tracking-wide">
+          <span className="text-[11px] lg:text-xs bg-sky-100 text-sky-800 px-2 py-0.5 rounded font-bold uppercase tracking-wide">
             {status === "DELIVERED" ? "Completed" : "In transit"}
           </span>
         </div>
