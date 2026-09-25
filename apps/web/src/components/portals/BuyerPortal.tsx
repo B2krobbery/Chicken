@@ -484,10 +484,18 @@ export function BuyerPortal() {
           >
             {locations.map((loc) => (
               <option key={loc.id} value={loc.id}>
-                {loc.name} — {loc.address_line1}, {loc.city} {loc.pincode}
+                {loc.name} — {loc.city}
               </option>
             ))}
           </select>
+          {(() => {
+            const sel = locations.find((l) => l.id === selectedLocationId);
+            return sel ? (
+              <p className="text-[11px] lg:text-xs text-slate-500 mt-1 line-clamp-2">
+                {sel.name} — {sel.address_line1}, {sel.city} {sel.pincode}
+              </p>
+            ) : null;
+          })()}
           {cart?.items?.length > 0 && (
             <>
               <div className="pt-2 space-y-1.5 border-t border-slate-100">
