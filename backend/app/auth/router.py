@@ -50,28 +50,45 @@ class UserResponse(BaseModel):
 
 @router.post("/register", status_code=status.HTTP_201_CREATED, response_model=TokenResponse)
 def register(req: RegisterRequest, request: Request, db: Session = Depends(get_db)):
+    role_name = req.role.strip().upper()
+    if role_name not in ["BUYER", "SUPPLIER"]:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Public self-registration is only permitted for BUYER and SUPPLIER roles. Admin and Driver accounts are provisioned by operations."
+        )
+
+    clean_email = req.email.strip().lower()
+    clean_phone = req.phone_number.strip()
+    clean_name = req.full_name.strip()
+
+    if len(req.password) < 8:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Password must be at least 8 characters in length"
+        )
+
     # Validate role
-    role_obj = db.query(Role).filter(Role.name == req.role.upper()).first()
+    role_obj = db.query(Role).filter(Role.name == role_name).first()
     if not role_obj:
         # Create default roles if not yet seeded
-        role_obj = Role(name=req.role.upper(), description=f"{req.role.upper()} role")
+        role_obj = Role(name=role_name, description=f"{role_name} role")
         db.add(role_obj)
         db.flush()
 
     # Check duplicate email
-    if db.query(User).filter(User.email == req.email.lower()).first():
+    if db.query(User).filter(User.email == clean_email).first():
         raise HTTPException(status_code=400, detail="User with this email already exists")
     
     # Check duplicate phone
-    if db.query(User).filter(User.phone_number == req.phone_number).first():
+    if db.query(User).filter(User.phone_number == clean_phone).first():
         raise HTTPException(status_code=400, detail="User with this phone number already exists")
 
     hashed_pw = get_password_hash(req.password)
     user = User(
-        email=req.email.lower(),
-        phone_number=req.phone_number,
+        email=clean_email,
+        phone_number=clean_phone,
         password_hash=hashed_pw,
-        full_name=req.full_name,
+        full_name=clean_name,
         is_active=True
     )
     db.add(user)
@@ -87,7 +104,7 @@ def register(req: RegisterRequest, request: Request, db: Session = Depends(get_d
 
     # Automatically create profile for Supplier or Buyer
     if role_obj.name == "SUPPLIER":
-        biz_name = req.business_name or f"{req.full_name}'s Poultry"
+        biz_name = (req.business_name or f"{clean_name}'s Poultry").strip()
         supplier = Supplier(
             user_id=user.id,
             business_name=biz_name,
@@ -100,7 +117,7 @@ def register(req: RegisterRequest, request: Request, db: Session = Depends(get_d
         profile_id = str(supplier.id)
         kyc_status = supplier.kyc_status
     elif role_obj.name == "BUYER":
-        biz_name = req.business_name or f"{req.full_name}'s Business"
+        biz_name = (req.business_name or f"{clean_name}'s Business").strip()
         buyer = Buyer(
             user_id=user.id,
             business_name=biz_name,
@@ -148,7 +165,8 @@ def register(req: RegisterRequest, request: Request, db: Session = Depends(get_d
 
 @router.post("/login", response_model=TokenResponse)
 def login(req: LoginRequest, request: Request, db: Session = Depends(get_db)):
-    user = db.query(User).filter(User.email == req.email.lower()).first()
+    clean_email = req.email.strip().lower()
+    user = db.query(User).filter(User.email == clean_email).first()
     if not user or not verify_password(req.password, user.password_hash):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

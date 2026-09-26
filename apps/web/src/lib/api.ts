@@ -21,6 +21,15 @@ export async function apiRequest(
   });
 
   if (!res.ok) {
+    if (
+      res.status === 401 &&
+      typeof window !== "undefined" &&
+      !endpoint.includes("/auth/login") &&
+      !endpoint.includes("/auth/register")
+    ) {
+      window.dispatchEvent(new CustomEvent("auth:unauthorized", { detail: { endpoint } }));
+    }
+
     let errorDetail = `Request failed with status ${res.status}`;
     const text = await res.text();
     if (text) {

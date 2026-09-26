@@ -54,3 +54,38 @@ def test_unauthorized_access(client: TestClient, buyer1_token: str):
         headers={"Authorization": f"Bearer {buyer1_token}"}
     )
     assert res.status_code == 403
+
+def test_register_role_restriction(client: TestClient):
+    # Attempting to self-register as ADMIN or DRIVER must be rejected
+    res = client.post("/api/v1/auth/register", json={
+        "email": "hacker_admin@example.com",
+        "password": "Password@123",
+        "full_name": "Fake Admin",
+        "phone_number": "+919999888877",
+        "role": "ADMIN"
+    })
+    assert res.status_code == 400
+    assert "Public self-registration is only permitted" in res.json()["detail"]
+
+def test_login_whitespace_and_case_insensitivity(client: TestClient):
+    unique_suffix = uuid.uuid4().hex[:6]
+    email = f"whitespacetest_{unique_suffix}@example.com"
+    phone = f"+9197{unique_suffix[:8]}"
+
+    reg_res = client.post("/api/v1/auth/register", json={
+        "email": f"  {email.upper()}  ",
+        "password": "Password@123",
+        "full_name": "Whitespace User",
+        "phone_number": f"  {phone}  ",
+        "role": "SUPPLIER"
+    })
+    assert reg_res.status_code == 201
+
+    # Login with mixed case and leading/trailing whitespace
+    login_res = client.post("/api/v1/auth/login", json={
+        "email": f"  {email}  ",
+        "password": "Password@123"
+    })
+    assert login_res.status_code == 200
+    assert "access_token" in login_res.json()
+

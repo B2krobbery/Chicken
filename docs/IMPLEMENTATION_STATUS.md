@@ -14,6 +14,7 @@ Additionally, Payment (P1-24) and Notifications (P1-23) are implemented using **
 - **States**: branded `SplashScreen`, `.skeleton` shimmer system matching final layouts, `EmptyState`/`ErrorState`/`Banner` components; views gate on loading so empty states never flash prematurely.
 - **Responsive**: verified via Playwright screenshots at 320, 390, 768, 1280, 1440, 1920 — no viewport overflow; tables scroll internally and hide non-essential columns on mobile.
 - **Frontend bug fixed in this pass**: `api.ts` read the error response body twice (`res.json()` then `res.text()`) producing "body stream already read" on any non-JSON API error; now reads once and parses.
+- **Authentication & Registration**: Dual-mode login and registration frontend now live on `/`. Supports commercial Buyer (Hotels, Restaurants, QSRs, Caterers) and Supplier self-onboarding with immediate transition to pending KYC workflows. Reactive 401 session expiry clears stale tokens.
 - **Backend fix pending deploy**: Supavisor session-mode pool exhaustion → `NullPool` on Vercel (`app/core/database.py`) — **needs `chicken-api` redeploy**; until then recurring 500s under connection pressure are possible (recovery: terminate idle `chicken_app` backends).
 
 ## Implementation Matrix

@@ -109,7 +109,8 @@ The following environment variables are required. See `.env.example` in the root
 
 ## API architecture
 - **Base Path**: `/api/v1`
-- **Authentication**: JWT Bearer Tokens passed in the `Authorization` header.
+- **Authentication**: JWT Bearer Tokens passed in the `Authorization` header. Public self-registration (`POST /api/v1/auth/register`) is strictly scoped to `BUYER` and `SUPPLIER` personas; `ADMIN` and `DRIVER` accounts are provisioned via database seed or operations. Password hashing uses standard bcrypt. Emails and phone numbers are normalized (whitespace-trimmed and case-insensitive).
+- **Session Lifecycle**: Frontend `api.ts` listens for `401 Unauthorized` responses and reactively purges expired tokens while notifying `AuthContext` to transition to the login view with an informative banner.
 - **Idempotency**: Critical endpoints (like `/payments/intent`) enforce idempotency using an `Idempotency-Key` header.
 - **Webhooks**: Payment webhooks enforce signature validation (`X-Signature`) and payload deduplication.
 - **Error Handling**: Standard HTTP status codes (400 for validation, 401/403 for auth, 404 for not found). Structured JSON error responses.
