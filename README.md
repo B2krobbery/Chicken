@@ -12,13 +12,16 @@ The platform standardizes SKU definitions, enforces food safety and tax complian
 
 ---
 
-## Live Demo
+## Live Demo & Access
 
-- **Frontend (production)**: [https://chicken-kappa-six.vercel.app](https://chicken-kappa-six.vercel.app) — Next.js app on Vercel
-- **Backend API**: [https://chicken-api-mauve.vercel.app](https://chicken-api-mauve.vercel.app) — FastAPI on Vercel (`/health`, `/docs`, base path `/api/v1`)
-- **Database**: Supabase Postgres
+- **Frontend (production)**: [https://chicken-kappa-six.vercel.app](https://chicken-kappa-six.vercel.app) — Next.js 14 app on Vercel
+- **Backend API**: [https://chicken-api-mauve.vercel.app](https://chicken-api-mauve.vercel.app) — FastAPI monolith on Vercel (`/health`, `/docs`, base path `/api/v1`)
+- **Database**: Supabase PostgreSQL 17 (ap-northeast-1) via Supavisor pooler
 
-Use the seeded demo credentials in [Section 3](#3-seeded-demonstration-credentials) to sign in as Admin, Supplier, Buyer, or Driver.
+### Authentication Methods Supported:
+1. **Google OAuth 2.0 SSO**: One-click Google sign-in and sign-up with Google Identity Services. New users are automatically provisioned as commercial Buyers or Suppliers with business profiles and empty shopping carts.
+2. **Commercial Account Self-Registration**: Direct registration for institutional Buyers (Hotels, Restaurants, QSRs, Caterers, Retailers) and vetted poultry Suppliers with immediate transition to pending KYC onboarding.
+3. **Seeded Demonstration Credentials**: Instant 1-click evaluation personas for Admin, Supplier, Buyer, and Driver in [Section 3](#3-seeded-demonstration-credentials).
 
 ---
 
@@ -76,11 +79,20 @@ Use the seeded demo credentials in [Section 3](#3-seeded-demonstration-credentia
    - Generates sequential invoices (`INV-YYYY-XXXXX`) and printable PDFs.
 8. **Immutable Proof of Delivery (POD)**:
    - Driver captures OTP verification, digital recipient signature, photo proof, and accepted vs rejected weight.
+9. **Enterprise Google OAuth 2.0 & Role Gating**:
+   - Seamless 1-click Google Sign-In & Sign-Up via Google Identity Services (`POST /api/v1/auth/google`).
+   - Automatic provisioning of commercial `BUYER` or `SUPPLIER` entities, initial `PENDING` KYC status, and cart creation.
+   - Comprehensive audit trails (`USER_REGISTER_GOOGLE`, `USER_LOGIN_GOOGLE`).
+   - Public self-registration strictly restricted to Buyers and Suppliers; Admins and Drivers are provisioned by operations.
 
 ---
 
-## 3. Seeded Demonstration Credentials
+## 3. Demonstration & Access Credentials
 
+### Option A: Google Single Sign-On (SSO)
+Click **"Continue with Google"** on the login or registration forms. If running in a new environment, use the built-in configuration modal to supply your Google Cloud OAuth Web Client ID or test the backend token verification pipeline directly.
+
+### Option B: Seeded Evaluation Accounts
 The seed script (`scripts/seed.py`) populates the database with real-world institutional accounts:
 
 | Role | Email | Password | Persona & Status |
@@ -212,4 +224,3 @@ Run all automated pytest suites:
 - Forward Volume Contracts (P4-02)
 - City Micro-Hub & Cross-Dock Management (P4-03)
 - Poultry Price Index & Pan-India Expansion (P4-07)
-# Chicken
