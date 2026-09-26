@@ -106,10 +106,13 @@ The following environment variables are required. See `.env.example` in the root
 - `PAYMENT_PROVIDER`: Configures payment gateway (currently `MOCK`).
 - `NOTIFICATION_PROVIDER`: Configures notifications (currently `MOCK`).
 - `NEXT_PUBLIC_API_URL`: (Frontend) Configures the backend API endpoint. Production value: `https://chicken-api-mauve.vercel.app/api/v1`.
+- `NEXT_PUBLIC_GOOGLE_CLIENT_ID`: (Frontend) Optional Google Cloud OAuth 2.0 Client ID for Google Identity Services / One Tap. Can also be set in browser settings via the UI connect modal.
+- `GOOGLE_CLIENT_ID`: (Backend) Optional Google Cloud OAuth 2.0 Client ID for token audience verification.
 
 ## API architecture
 - **Base Path**: `/api/v1`
 - **Authentication**: JWT Bearer Tokens passed in the `Authorization` header. Public self-registration (`POST /api/v1/auth/register`) is strictly scoped to `BUYER` and `SUPPLIER` personas; `ADMIN` and `DRIVER` accounts are provisioned via database seed or operations. Password hashing uses standard bcrypt. Emails and phone numbers are normalized (whitespace-trimmed and case-insensitive).
+- **Google OAuth SSO**: `POST /api/v1/auth/google` accepts Google ID token credentials from Google Identity Services. The backend validates token authenticity with Google's tokeninfo API, auto-provisions new users with their chosen commercial role (`BUYER` or `SUPPLIER`), initializes business profiles and buyer carts, emits immutable audit records (`USER_REGISTER_GOOGLE` or `USER_LOGIN_GOOGLE`), and returns session JWT tokens.
 - **Session Lifecycle**: Frontend `api.ts` listens for `401 Unauthorized` responses and reactively purges expired tokens while notifying `AuthContext` to transition to the login view with an informative banner.
 - **Idempotency**: Critical endpoints (like `/payments/intent`) enforce idempotency using an `Idempotency-Key` header.
 - **Webhooks**: Payment webhooks enforce signature validation (`X-Signature`) and payload deduplication.

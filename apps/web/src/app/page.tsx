@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import Script from "next/script";
 import { useAuth } from "@/context/AuthContext";
 import { AdminPortal } from "@/components/portals/AdminPortal";
 import { SupplierPortal } from "@/components/portals/SupplierPortal";
@@ -19,6 +20,8 @@ import {
   LogIn,
   AlertCircle,
   X,
+  Sparkles,
+  ExternalLink,
 } from "lucide-react";
 
 const DEMO_ROLES = [
@@ -70,6 +73,7 @@ export default function HomePage() {
     switchUser,
     login,
     register,
+    loginWithGoogle,
     clearSessionNotice,
   } = useAuth();
 
@@ -90,6 +94,15 @@ export default function HomePage() {
 
   const [authErr, setAuthErr] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState<string | null>(null);
+  const [showGoogleModal, setShowGoogleModal] = useState(false);
+  const [customGoogleClientId, setCustomGoogleClientId] = useState("");
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("chickenman_google_client_id") || "";
+      setCustomGoogleClientId(saved);
+    }
+  }, []);
 
   if (loading) {
     const stageIndex =
@@ -165,6 +178,79 @@ export default function HomePage() {
       });
     } catch (err: any) {
       setAuthErr(err.message);
+    } finally {
+      setIsSubmitting(null);
+    }
+  };
+
+  const handleGoogleAuthClick = () => {
+    setAuthErr(null);
+    const effectiveClientId =
+      process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ||
+      (typeof window !== "undefined"
+        ? localStorage.getItem("chickenman_google_client_id")
+        : null);
+
+    if (
+      effectiveClientId &&
+      typeof window !== "undefined" &&
+      (window as any).google?.accounts?.id
+    ) {
+      try {
+        (window as any).google.accounts.id.initialize({
+          client_id: effectiveClientId,
+          callback: async (response: any) => {
+            if (response?.credential) {
+              setIsSubmitting("google");
+              try {
+                await loginWithGoogle(
+                  response.credential,
+                  authMode === "register" ? regRole : undefined,
+                  authMode === "register" ? regBusinessName : undefined,
+                  authMode === "register" && regRole === "BUYER"
+                    ? regBuyerType
+                    : undefined
+                );
+              } catch (err: any) {
+                setAuthErr(err.message);
+              } finally {
+                setIsSubmitting(null);
+              }
+            }
+          },
+        });
+        (window as any).google.accounts.id.prompt();
+      } catch (err: any) {
+        setShowGoogleModal(true);
+      }
+    } else {
+      setShowGoogleModal(true);
+    }
+  };
+
+  const handleSaveAndConnectGoogle = () => {
+    if (customGoogleClientId.trim()) {
+      localStorage.setItem("chickenman_google_client_id", customGoogleClientId.trim());
+      setShowGoogleModal(false);
+      setTimeout(() => {
+        handleGoogleAuthClick();
+      }, 150);
+    }
+  };
+
+  const handleTestGoogleAuth = async () => {
+    setIsSubmitting("google-test");
+    setAuthErr(null);
+    try {
+      await loginWithGoogle(
+        "test_google_token",
+        authMode === "register" ? regRole : undefined,
+        authMode === "register" ? regBusinessName : undefined,
+        authMode === "register" && regRole === "BUYER" ? regBuyerType : undefined
+      );
+      setShowGoogleModal(false);
+    } catch (err: any) {
+      setAuthErr(err.message || "Failed to authenticate with Google test persona");
     } finally {
       setIsSubmitting(null);
     }
@@ -346,11 +432,51 @@ export default function HomePage() {
               </div>
 
               {/* Credential form */}
-              <div className="bg-white border border-slate-200 rounded-lg p-5 lg:p-6 space-y-3 lg:space-y-4">
+              <div className="bg-white border border-slate-200 rounded-lg p-5 lg:p-6 space-y-4">
                 <div className="text-xs lg:text-sm font-bold text-slate-800 flex items-center gap-1.5">
                   <Lock className="w-3.5 h-3.5 text-slate-400" />
-                  Sign in with credentials
+                  Sign in with credentials or Google
                 </div>
+
+                {/* Google Sign In Button */}
+                <button
+                  type="button"
+                  onClick={handleGoogleAuthClick}
+                  disabled={isSubmitting !== null}
+                  className="w-full py-2.5 px-4 bg-white hover:bg-slate-50 border border-slate-300 text-slate-700 font-semibold text-xs sm:text-sm rounded-md transition flex items-center justify-center gap-2.5 shadow-sm hover:shadow active:scale-[0.99]"
+                >
+                  {isSubmitting === "google" || isSubmitting === "google-test" ? (
+                    <Loader2 className="w-4 h-4 animate-spin text-brand-600" />
+                  ) : (
+                    <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
+                      <path
+                        fill="#4285F4"
+                        d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"
+                      />
+                      <path
+                        fill="#34A853"
+                        d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.34 24 12 24z"
+                      />
+                      <path
+                        fill="#FBBC05"
+                        d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 9.99 0 12s.45 3.82 1.25 5.42l4.03-3.15z"
+                      />
+                      <path
+                        fill="#EA4335"
+                        d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.34 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"
+                      />
+                    </svg>
+                  )}
+                  <span>Continue with Google</span>
+                </button>
+
+                <div className="relative flex items-center justify-center my-1">
+                  <div className="border-t border-slate-200 w-full" />
+                  <span className="bg-white px-3 text-[11px] text-slate-400 uppercase tracking-wider shrink-0 font-medium">
+                    or sign in with email
+                  </span>
+                </div>
+
                 <form onSubmit={handleCustomLogin} className="space-y-3">
                   <div>
                     <label
@@ -461,6 +587,45 @@ export default function HomePage() {
                     Commercial Producers & Processors
                   </p>
                 </button>
+              </div>
+
+              {/* Google Sign Up Button */}
+              <button
+                type="button"
+                onClick={handleGoogleAuthClick}
+                disabled={isSubmitting !== null}
+                className="w-full py-2.5 px-4 bg-white hover:bg-slate-50 border border-slate-300 text-slate-700 font-semibold text-xs sm:text-sm rounded-md transition flex items-center justify-center gap-2.5 shadow-sm hover:shadow active:scale-[0.99]"
+              >
+                {isSubmitting === "google" || isSubmitting === "google-test" ? (
+                  <Loader2 className="w-4 h-4 animate-spin text-brand-600" />
+                ) : (
+                  <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
+                    <path
+                      fill="#4285F4"
+                      d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"
+                    />
+                    <path
+                      fill="#34A853"
+                      d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.34 24 12 24z"
+                    />
+                    <path
+                      fill="#FBBC05"
+                      d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 9.99 0 12s.45 3.82 1.25 5.42l4.03-3.15z"
+                    />
+                    <path
+                      fill="#EA4335"
+                      d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.34 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"
+                    />
+                  </svg>
+                )}
+                <span>Sign up with Google as {regRole === "BUYER" ? "Buyer" : "Supplier"}</span>
+              </button>
+
+              <div className="relative flex items-center justify-center my-1">
+                <div className="border-t border-slate-200 w-full" />
+                <span className="bg-white px-3 text-[11px] text-slate-400 uppercase tracking-wider shrink-0 font-medium">
+                  or register with form
+                </span>
               </div>
 
               <form onSubmit={handleRegister} className="space-y-3">
@@ -584,6 +749,125 @@ export default function HomePage() {
           )}
         </div>
       </div>
+
+      {/* Google Identity Services SDK */}
+      <Script src="https://accounts.google.com/gsi/client" strategy="afterInteractive" />
+
+      {/* Google OAuth Configuration & Quick Connect Modal */}
+      {showGoogleModal && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-2xl border border-slate-200 w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-slate-200 bg-slate-50/70">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center shadow-xs">
+                  <svg className="w-4 h-4" viewBox="0 0 24 24">
+                    <path
+                      fill="#4285F4"
+                      d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"
+                    />
+                    <path
+                      fill="#34A853"
+                      d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.34 24 12 24z"
+                    />
+                    <path
+                      fill="#FBBC05"
+                      d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 9.99 0 12s.45 3.82 1.25 5.42l4.03-3.15z"
+                    />
+                    <path
+                      fill="#EA4335"
+                      d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.34 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"
+                    />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-slate-900">Google OAuth Sign-In</h3>
+                  <p className="text-[11px] text-slate-500">Google Identity Services configuration</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowGoogleModal(false)}
+                className="text-slate-400 hover:text-slate-600 p-1 rounded-md transition"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="p-5 space-y-4">
+              <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-600 leading-relaxed">
+                TheChickenMan supports enterprise Google Single Sign-On (SSO). Enter your Google Cloud OAuth Client ID to test Google One-Tap on this domain, or test the verified backend auth pipeline directly.
+              </div>
+
+              <div>
+                <label
+                  htmlFor="google-client-id"
+                  className="block text-[11px] font-semibold text-slate-700 uppercase tracking-wide mb-1"
+                >
+                  Google OAuth Client ID
+                </label>
+                <input
+                  id="google-client-id"
+                  type="text"
+                  value={customGoogleClientId}
+                  onChange={(e) => setCustomGoogleClientId(e.target.value)}
+                  placeholder="e.g. 123456789-abcdef.apps.googleusercontent.com"
+                  className="w-full px-3 py-2 border border-slate-300 rounded-md text-xs font-mono focus:outline-none focus:ring-2 focus:ring-brand-500/40 focus:border-brand-500"
+                />
+                <p className="text-[10px] text-slate-400 mt-1">
+                  Saved in your browser storage (`NEXT_PUBLIC_GOOGLE_CLIENT_ID` fallback).
+                </p>
+              </div>
+
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={handleSaveAndConnectGoogle}
+                  disabled={!customGoogleClientId.trim()}
+                  className="flex-1 py-2 px-3 bg-brand-600 hover:bg-brand-700 disabled:bg-slate-200 disabled:text-slate-400 text-white text-xs font-bold rounded-md transition"
+                >
+                  Save & Trigger Google Auth
+                </button>
+                {customGoogleClientId && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      localStorage.removeItem("chickenman_google_client_id");
+                      setCustomGoogleClientId("");
+                    }}
+                    className="py-2 px-3 border border-slate-300 hover:bg-slate-50 text-slate-600 text-xs font-semibold rounded-md transition"
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
+
+              <div className="relative flex items-center justify-center my-2">
+                <div className="border-t border-slate-200 w-full" />
+                <span className="bg-white px-2.5 text-[10px] text-slate-400 uppercase tracking-wider shrink-0 font-medium">
+                  Or Test Backend Pipeline
+                </span>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleTestGoogleAuth}
+                disabled={isSubmitting !== null}
+                className="w-full py-2 px-3 bg-slate-900 hover:bg-slate-800 disabled:bg-slate-300 text-white text-xs font-bold rounded-md transition flex items-center justify-center gap-2 shadow-sm"
+              >
+                {isSubmitting === "google-test" ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                )}
+                <span>Test Google Auth Pipeline ({authMode === "register" ? regRole : "BUYER"})</span>
+              </button>
+              <p className="text-[10px] text-slate-400 text-center">
+                Calls `POST /api/v1/auth/google`, issues live JWT token, provisions profile and logs you directly into the workspace.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

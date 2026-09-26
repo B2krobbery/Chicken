@@ -89,3 +89,39 @@ def test_login_whitespace_and_case_insensitivity(client: TestClient):
     assert login_res.status_code == 200
     assert "access_token" in login_res.json()
 
+def test_google_auth_flow(client: TestClient, monkeypatch):
+    from unittest.mock import AsyncMock
+
+    unique_suffix = uuid.uuid4().hex[:6]
+    google_email = f"google_user_{unique_suffix}@gmail.com"
+
+    mock_verify = AsyncMock(return_value={
+        "email": google_email,
+        "name": "Google Verified User",
+        "sub": f"google_sub_{unique_suffix}"
+    })
+    monkeypatch.setattr("app.auth.router.verify_google_token", mock_verify)
+
+    # 1. First-time Google sign-in (auto-registers as BUYER)
+    res = client.post("/api/v1/auth/google", json={
+        "credential": "mock_google_valid_jwt_token",
+        "role": "BUYER"
+    })
+    assert res.status_code == 200
+    data = res.json()
+    assert "access_token" in data
+    assert data["email"] == google_email
+    assert data["roles"] == ["BUYER"]
+    assert data["kyc_status"] == "PENDING"
+    assert data["profile_id"] is not None
+
+    # 2. Second-time Google sign-in (logs into existing account)
+    res_login = client.post("/api/v1/auth/google", json={
+        "credential": "mock_google_valid_jwt_token"
+    })
+    assert res_login.status_code == 200
+    data_login = res_login.json()
+    assert data_login["user_id"] == data["user_id"]
+    assert data_login["email"] == google_email
+
+

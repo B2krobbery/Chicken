@@ -36,6 +36,12 @@ interface AuthContextType {
   sessionNotice: string | null;
   login: (email: string, password: string) => Promise<any>;
   register: (data: RegisterData) => Promise<any>;
+  loginWithGoogle: (
+    credential: string,
+    role?: string,
+    businessName?: string,
+    buyerType?: string
+  ) => Promise<any>;
   logout: () => void;
   switchUser: (role: "ADMIN" | "SUPPLIER" | "BUYER" | "DRIVER") => Promise<void>;
   refreshUser: () => Promise<void>;
@@ -121,6 +127,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const loginWithGoogle = async (
+    credential: string,
+    targetRole?: string,
+    businessName?: string,
+    buyerType?: string
+  ) => {
+    setBootStage("connect");
+    setLoading(true);
+    setSessionNotice(null);
+    try {
+      const res = await api.auth.googleLogin(credential, targetRole, businessName, buyerType);
+      localStorage.setItem("token", res.access_token);
+      setToken(res.access_token);
+      await fetchCurrentUser();
+      return res;
+    } catch (err) {
+      setLoading(false);
+      throw err;
+    }
+  };
+
   const logout = () => {
     localStorage.removeItem("token");
     setToken(null);
@@ -164,6 +191,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         sessionNotice,
         login,
         register,
+        loginWithGoogle,
         logout,
         switchUser,
         refreshUser,

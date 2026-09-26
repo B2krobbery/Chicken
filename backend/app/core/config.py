@@ -1,4 +1,5 @@
 import os
+from typing import Optional
 from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
@@ -24,6 +25,7 @@ class Settings(BaseSettings):
     PAYMENT_PROVIDER: str = os.getenv("PAYMENT_PROVIDER", "MOCK")
     PAYMENT_WEBHOOK_SECRET: str = os.getenv("PAYMENT_WEBHOOK_SECRET", "dev_webhook_secret_mock_gateway_9921")
     NOTIFICATION_PROVIDER: str = os.getenv("NOTIFICATION_PROVIDER", "MOCK")
+    GOOGLE_CLIENT_ID: Optional[str] = os.getenv("GOOGLE_CLIENT_ID", None)
 
     class Config:
         env_file = ".env"
